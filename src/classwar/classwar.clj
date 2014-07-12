@@ -41,6 +41,9 @@
   (let [actions [cwa/nop
                  cwa/surender
                  cwa/demo
+                 cwa/handout-flyers
+                 cwa/posters
+                 cwa/stickers
                  cwa/online-campaign
                  cwa/party
                  cwa/start-antifa-group]]

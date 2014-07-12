@@ -11,65 +11,100 @@
    :desc "Give up"
    :duration 0
    :effort 0
-   :action (fn [g a _ _] (assoc-in g [:status] :game-over))})
+   :action (fn [g _ _ _] (assoc-in g [:status] :game-over))})
 
 (defn adj-level [level op val]
   (max (min 1.0 (op level val)) 0.0))
 
-(defn demo-action [g a _ _]
-  (cond
-   (= (a :type) :antifa)
-   (-> g
-       (update-in [:facist-activity] adj-level - 0.01) ;; fight facists
-       (update-in [:activists] + 2)) ;; recruit activists
-   (= (a :type) :anticap) (update-in g [:capitalist-activity] - 0.01)))
+
 
 (def demo
   {:id :demo
    :desc "Organize demonstration"
    :effort 10
    :type :antifa
-   :action demo-action})
-
-
-(defn online-campaign-action [g a _ _]
-  (-> g
-      (update-in [:activists] + 1)
-      (update-in [:facist-activity] adj-level - 0.01)
-      (update-in [:political-climate] - 0.01)))
+   :action
+   (fn [g a _ _]
+     (cond
+      (= (a :type) :antifa)
+      (-> g
+          (update-in [:facist-activity] adj-level - 0.01) ;; fight facists
+          (update-in [:activists] + 2)) ;; recruit activists
+      (= (a :type) :anticap) (update-in g [:capitalist-activity] - 0.01)))})
 
 (def online-campaign
   {:id :online-campaign
    :desc "Start online campaign"
    :effort 2
-   :action online-campaign-action})
-
-
-(defn party-action [g a _ _]
-  (-> g
-      (update-in [:activists] + 1)
-      (update-in [:money] + 5000)))
+   :action
+   (fn [g _ _ _]
+     (-> g
+         (update-in [:activists] + 1)
+         (update-in [:facist-activity] adj-level - 0.01)
+         (update-in [:political-climate] - 0.01)))})
 
 (def party
   {:id :party
    :desc "Support party"
    :effort 5
-   :action party-action})
+   :action
+   (fn [g _ _ _]
+     (-> g
+         (update-in [:activists] + 1)
+         (update-in [:money] + 5000)))})
 
 (defn antifa-group-action [g institution _ _]
   (update-in g [:facist-activity] adj-level - 0.01))
-
-(defn start-antifa-group-action [g a _ _]
-  (let [req-activists (a :effort)]
-    (-> g
-        (update-in [:activists] - req-activists)
-        (update-in [:institutions] conj
-                   {:type :antifa-group
-                    :activists req-activists
-                    :action antifa-group-action}))))
 
 (def start-antifa-group
   {:id :antifa-group
    :desc "Start an antifa group"
    :effort 5
-   :action start-antifa-group-action})
+   :action
+   (fn [g a _ _]
+     (let [req-activists (a :effort)]
+       (-> g
+           (update-in [:activists] - req-activists)
+           (update-in [:institutions] conj
+                      {:type :antifa-group
+                       :activists req-activists
+                       :action antifa-group-action}))))})
+
+(def handout-flyers
+  {:id :handout-flyers
+   :desc "Handout flyers"
+   :effort 1
+   :action
+   (fn [g _ _ _]
+     (update-in g [:revolutionary-potential] adj-level + 0.01))})
+
+(def posters
+  {:id :posters
+   :desc "Stick up posters"
+   :effort 2
+   :action
+   (fn [g _ _ _]
+     (-> g
+         (update-in [:police-repression] adj-level + 0.01)
+         (update-in [:revolutionary-potential] adj-level + 0.01)))})
+
+(def stickers
+  {:id :posters
+   :desc "Stickers"
+   :effort 2
+   :action
+   (fn [g _ _ _]
+     (-> g
+         (update-in [:police-repression] adj-level + 0.01)
+         (update-in [:revolutionary-potential] adj-level + 0.01)))})
+
+(def reclaim-party)
+(def occupy-university)
+
+
+(def start-union)
+(def start-anticap-group)
+(def start-adbusting-group)
+(def start-paper)
+(def start-book-cafe)
+(def start-comunity-center)
