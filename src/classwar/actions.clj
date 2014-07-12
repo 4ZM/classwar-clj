@@ -13,13 +13,14 @@
    :effort 0
    :action (fn [g a _ _] (assoc-in g [:status] :game-over))})
 
+(defn adj-level [level op val]
+  (max (min 1.0 (op level val)) 0.0))
 
 (defn demo-action [g a _ _]
-  ;; Return result structure with rationale
   (cond
    (= (a :type) :antifa)
    (-> g
-       (update-in [:facist-activity] - 0.01) ;; fight facists
+       (update-in [:facist-activity] adj-level - 0.01) ;; fight facists
        (update-in [:activists] + 2)) ;; recruit activists
    (= (a :type) :anticap) (update-in g [:capitalist-activity] - 0.01)))
 
@@ -34,7 +35,7 @@
 (defn online-campaign-action [g a _ _]
   (-> g
       (update-in [:activists] + 1)
-      (update-in [:facist-activity] - 0.01)
+      (update-in [:facist-activity] adj-level - 0.01)
       (update-in [:political-climate] - 0.01)))
 
 (def online-campaign
@@ -56,7 +57,7 @@
    :action party-action})
 
 (defn antifa-group-action [g institution _ _]
-  (update-in g [:facist-activity] - 0.01))
+  (update-in g [:facist-activity] adj-level - 0.01))
 
 (defn start-antifa-group-action [g a _ _]
   (let [req-activists (a :effort)]

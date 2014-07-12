@@ -73,12 +73,6 @@
         opts (available-options g available-activists)]
     [(action-menu opts input)]))
 
-(def all-events
-  [cwe/police-notices])
-
-(defn current-events [g a]
-  (filter #((% :cond) g) all-events))
-
 (defn tic [g actions events]
 
   (let [new-game (atom g)]
@@ -109,7 +103,7 @@
   (loop [g  (setup-game)]
     (show-game-overview g)
     (let [actions (get-actions g input)
-          events (current-events g actions)
+          events (cwe/current-events g actions)
           new-game (tic g actions events)]
       (if (= (new-game :status) :running) (recur new-game))))
   (println "Game Over"))

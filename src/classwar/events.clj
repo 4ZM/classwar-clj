@@ -8,3 +8,8 @@
                       (assoc-in [:police-noticed] true)
                       (update-in [:police-repression] + 0.01)))})
 
+(def all-events
+  [police-notices])
+
+(defn current-events [g a]
+  (filter #((% :cond) g) all-events))
