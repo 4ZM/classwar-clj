@@ -4,17 +4,17 @@
   {:id :nop
    :desc "Keep playing"
    :effort 0
-   :action (fn [g _] g)})
+   :action (fn [g _ _ _] g)})
 
 (def surender
   {:id :surender
    :desc "Give up"
    :duration 0
    :effort 0
-   :action (fn [g a] (assoc-in g [:status] :game-over))})
+   :action (fn [g a _ _] (assoc-in g [:status] :game-over))})
 
 
-(defn demo-action [g a]
+(defn demo-action [g a _ _]
   ;; Return result structure with rationale
   (cond
    (= (a :type) :antifa)
@@ -31,7 +31,7 @@
    :action demo-action})
 
 
-(defn online-campaign-action [g a]
+(defn online-campaign-action [g a _ _]
   (-> g
       (update-in [:activists] + 1)
       (update-in [:facist-activity] - 0.01)
@@ -44,10 +44,10 @@
    :action online-campaign-action})
 
 
-(defn party-action [g a]
+(defn party-action [g a _ _]
   (-> g
       (update-in [:activists] + 1)
-      (update-in [:mu] + 5000)))
+      (update-in [:money] + 5000)))
 
 (def party
   {:id :party
@@ -55,10 +55,10 @@
    :effort 5
    :action party-action})
 
-(defn antifa-group-action [g institution]
+(defn antifa-group-action [g institution _ _]
   (update-in g [:facist-activity] - 0.01))
 
-(defn start-antifa-group-action [g a]
+(defn start-antifa-group-action [g a _ _]
   (let [req-activists (a :effort)]
     (-> g
         (update-in [:activists] - req-activists)

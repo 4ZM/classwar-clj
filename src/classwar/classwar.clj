@@ -1,16 +1,16 @@
 (ns classwar
   (:require [classwar.actions :as cwa]
+            [classwar.events :as cwe]
             [clojure.string :as str]))
 
 (defn setup-game []
   "Create initial game state"
   {:day 1
 
-   :mu 1000                      ;;  monitary units
-
    :activists                  5 ;; Number of
    :revolutionary-potential 0.00 ;; %
    :organized-workforce     0.00 ;; %
+   :money                   1000 ;; $$
 
    :facist-activity         0.05 ;; %
    :capitalist-activity     0.10 ;; %
@@ -18,8 +18,9 @@
 
    :political-climate       0.00 ;; -1 to 1 (left / right)
 
-   :events []
    :institutions []              ;; Support groups and structures
+
+   :police-noticed         false ;; Police knows about the movement
 
    :status :running})
 
@@ -30,19 +31,20 @@
                    (g :activists)
                    (g :organized-workforce)
                    (g :revolutionary-potential)))
-  (println (format "  Facists: %2.2f  Capitalists: %2.2f  Police: %2.2f"
+  (println (format "  Facists: %2.2f  Capitalists: %2.2f  Police: %2.2f  Climate: %2.2f"
                    (g :facist-activity)
                    (g :capitalist-activity)
-                   (g :police-repression))))
+                   (g :police-repression)
+                   (g :political-climate))))
 
-(defn available-options [activists]
+(defn available-options [g available-activists]
   (let [actions [cwa/nop
                  cwa/surender
                  cwa/demo
                  cwa/online-campaign
                  cwa/party
                  cwa/start-antifa-group]]
-    (filter #(< (% :effort) activists) actions)))
+    (filter #(< (% :effort) available-activists) actions)))
 
 (defn- format-menu-option [i opt]
   (format "  %d. %s [%d A]" i (opt :desc) (opt :effort)))
@@ -67,25 +69,35 @@
     (nth opts sel)))
 
 (defn get-actions [g input]
-  (let [activists (g :activists)
-        opts (available-options activists)]
+  (let [available-activists (g :activists)
+        opts (available-options g available-activists)]
     [(action-menu opts input)]))
 
-(defn create-events [g a] [])
+(def all-events
+  [cwe/police-notices])
 
-(defn tic [g actions]
+(defn current-events [g a]
+  (filter #((% :cond) g) all-events))
+
+(defn tic [g actions events]
 
   (let [new-game (atom g)]
 
     ;; Do all the actions
     (doall
      (for [a actions]
-       (reset! new-game ((a :action) @new-game a))))
+       (reset! new-game ((a :action) @new-game a actions events))))
 
     ;; Let institutions act
     (doall
      (for [i (@new-game :institutions)]
-       (reset! new-game ((i :action) @new-game i))))
+       (reset! new-game ((i :action) @new-game i actions events))))
+
+    ;; Do game logic
+    (doall
+     (for [e events]
+       (do (println "EVENT! " (e :desc))
+           (reset! new-game ((e :action) @new-game)))))
 
     ;; Advance to next day
     (reset! new-game (update-in @new-game [:day] inc))
@@ -97,8 +109,7 @@
   (loop [g  (setup-game)]
     (show-game-overview g)
     (let [actions (get-actions g input)
-          events (create-events g actions)
-          new-game (tic g actions)]
-      ;;(println "Debug" new-game)
+          events (current-events g actions)
+          new-game (tic g actions events)]
       (if (= (new-game :status) :running) (recur new-game))))
   (println "Game Over"))
