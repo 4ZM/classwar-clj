@@ -7,20 +7,24 @@
   "Create initial game state"
   {:day 1
 
-   :activists                  5 ;; Number of
-   :revolutionary-potential 0.00 ;; %
-   :organized-workforce     0.00 ;; %
-   :money                   1000 ;; $$
+   :activists                  5  ;; Number of
+   :revolutionary-potential 0.00  ;; %
+   :organized-workforce     0.00  ;; %
+   :money                   1000  ;; $$
 
-   :facist-activity         0.05 ;; %
-   :capitalist-activity     0.10 ;; %
-   :police-repression       0.00 ;; %
+   :fascists {:activity     0.05  ;; %
+             :power         0.01} ;; %
 
-   :political-climate       0.00 ;; -1 to 1 (left / right)
+   :capitalists {:activity  0.10  ;; %
+                 :power     0.50} ;; %
 
-   :institutions []              ;; Support groups and structures
+   :police-repression       0.00  ;; %
 
-   :police-noticed         false ;; Police knows about the movement
+   :political-climate       0.00  ;; -1 to 1 (left / right)
+
+   :institutions              []  ;; Support groups and structures
+
+   :police-noticed         false  ;; Police knows about the movement
 
    :status :running})
 
@@ -31,16 +35,21 @@
                    (g :activists)
                    (g :organized-workforce)
                    (g :revolutionary-potential)))
-  (println (format "  Facists: %2.2f  Capitalists: %2.2f  Police: %2.2f  Climate: %2.2f"
-                   (g :facist-activity)
-                   (g :capitalist-activity)
+  (println (format "  Fascists>    Power: %2.2f  Activity: %2.2f"
+                   (-> g :fascists :power)
+                   (-> g :fascists :activity)))
+  (println (format "  Capitalists> Power: %2.2f  Activity: %2.2f"
+                   (-> g :capitalists :power)
+                   (-> g :capitalists :activity)))
+  (println (format "  Police Repression: %2.2f  Political Climate: %2.2f"
                    (g :police-repression)
                    (g :political-climate))))
 
 (defn available-options [g available-activists]
   (let [actions [cwa/nop
                  cwa/surender
-                 cwa/demo
+                 (cwa/create-demo :antifa 5)
+                 (cwa/create-demo :anticap 5)
                  cwa/handout-flyers
                  cwa/posters
                  cwa/stickers
@@ -76,37 +85,41 @@
         opts (available-options g available-activists)]
     [(action-menu opts input)]))
 
-(defn tic [g actions events]
+(defn tic [game actions events]
 
-  (let [new-game (atom g)]
+  (let [g (atom game)]
 
     ;; Do all the actions
     (doall
      (for [a actions]
-       (reset! new-game ((a :action) @new-game a actions events))))
+       (reset! g ((a :action) @g a actions events))))
 
     ;; Let institutions act
     (doall
-     (for [i (@new-game :institutions)]
-       (reset! new-game ((i :action) @new-game i actions events))))
+     (for [i (@g :institutions)]
+       (reset! g ((i :action) @g i actions events))))
 
-    ;; Do game logic
+    ;; Let events play out
     (doall
      (for [e events]
        (do (println "EVENT! " (e :desc))
-           (reset! new-game ((e :action) @new-game)))))
+           (reset! g ((e :action) @g)))))
+
+    ;; Do game logic
+    (reset! g (update-in @g [:fascists :power] + (-> @g :fascists :activity)))
+    (reset! g (update-in @g [:capitalists :power] + (-> @g :capitalists :activity)))
 
     ;; Advance to next day
-    (reset! new-game (update-in @new-game [:day] inc))
+    (reset! g (update-in @g [:day] inc))
 
     ;; Return new game state
-    @new-game))
+    @g))
 
 (defn play [input]
   (loop [g  (setup-game)]
     (show-game-overview g)
     (let [actions (get-actions g input)
           events (cwe/current-events g actions)
-          new-game (tic g actions events)]
-      (if (= (new-game :status) :running) (recur new-game))))
+          g (tic g actions events)]
+      (if (= (g :status) :running) (recur g))))
   (println "Game Over"))

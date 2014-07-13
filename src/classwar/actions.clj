@@ -16,21 +16,29 @@
 (defn adj-level [level op val]
   (max (min 1.0 (op level val)) 0.0))
 
-
-
-(def demo
+(def demo-template
   {:id :demo
    :desc "Organize demonstration"
-   :effort 10
-   :type :antifa
+   :type :tmp
+   :effort :tmp
    :action
    (fn [g a _ _]
      (cond
       (= (a :type) :antifa)
       (-> g
-          (update-in [:facist-activity] adj-level - 0.01) ;; fight facists
+          (update-in [:facists :activity] adj-level - 0.01) ;; fight facists
           (update-in [:activists] + 2)) ;; recruit activists
-      (= (a :type) :anticap) (update-in g [:capitalist-activity] - 0.01)))})
+      (= (a :type) :anticap) (update-in g [:capitalists :activity] - 0.01)))})
+
+(defn create-demo [type activists]
+  (-> demo
+      (assoc-in [:type] type)
+      (assoc-in [:effort] activists)
+      (assoc-in [:desc] (cond
+                         (= type :antifa)
+                         "Organize Antifa demonstration"
+                         (= type :anticap)
+                         "Orgnaize anti-capitalist demonstration"))))
 
 (def online-campaign
   {:id :online-campaign
@@ -40,7 +48,7 @@
    (fn [g _ _ _]
      (-> g
          (update-in [:activists] + 1)
-         (update-in [:facist-activity] adj-level - 0.01)
+         (update-in [:fascists :activity] adj-level - 0.01)
          (update-in [:political-climate] - 0.01)))})
 
 (def party
@@ -54,7 +62,7 @@
          (update-in [:money] + 5000)))})
 
 (defn antifa-group-action [g institution _ _]
-  (update-in g [:facist-activity] adj-level - 0.01))
+  (update-in g [:fascists :activity] adj-level - 0.01))
 
 (def start-antifa-group
   {:id :antifa-group
