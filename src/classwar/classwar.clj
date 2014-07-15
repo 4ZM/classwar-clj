@@ -1,13 +1,21 @@
 (ns classwar
   (:require [classwar.actions :as cwa]
             [classwar.events :as cwe]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [lonocloud.synthread :as ->]))
+
+(defn activist-capacity [g]
+  "Max number of activists that can be organized"
+  ;; Inc with better infrastructure
+  10)
 
 (defn setup-game []
   "Create initial game state"
   {:day 1
 
    :activists                  5  ;; Number of
+   :prospects                  0  ;; Possible recruits
+
    :revolutionary-potential 0.00  ;; %
    :organized-workforce     0.00  ;; %
    :money                   1000  ;; $$
@@ -90,9 +98,13 @@
   (let [g (atom game)]
 
     ;; Do all the actions
-    (doall
-     (for [a actions]
-       (reset! g ((a :action) @g a actions events))))
+    ;; (doall
+    ;;  (for [a actions]
+    ;;    (reset! g ((a :action) @g a actions events))))
+
+    (let [action-fns (map (fn [a] (fn [g] ((a :action) g a actions events))) actions)
+          action-chain-fn (apply comp action-fns)]
+      (reset! g (action-chain-fn @g)))
 
     ;; Let institutions act
     (doall
@@ -106,8 +118,19 @@
            (reset! g ((e :action) @g)))))
 
     ;; Do game logic
-    (reset! g (update-in @g [:fascists :power] + (-> @g :fascists :activity)))
-    (reset! g (update-in @g [:capitalists :power] + (-> @g :capitalists :activity)))
+
+    ;; Get new activists
+    (let [space (- (activist-capacity @g) (@g :activists))
+          new-activists (min space (@g :prospects))]
+      (reset! g (update-in @g [:activists] + new-activists)))
+    (reset! g (assoc-in @g [:prospects] 0))
+
+    ;; Update opponents power
+    (reset! g (update-in @g [:fascists :power] + (-> game :fascists :activity)))
+    (reset! g (update-in @g [:capitalists :power] + (-> game :capitalists :activity)))
+
+    ;; Check termination
+    (if (>= (-> @g :fascists :power) 1.0) (reset! g (assoc-in @g [:status] :fascists-win)))
 
     ;; Advance to next day
     (reset! g (update-in @g [:day] inc))
@@ -115,11 +138,18 @@
     ;; Return new game state
     @g))
 
+(defn game-over [g]
+  (println "GAME OVER")
+  (case (g :status)
+    :surender (println " > You give up")
+    :fascists-win (println " > Fascists Win - You lose")))
+
 (defn play [input]
   (loop [g  (setup-game)]
     (show-game-overview g)
     (let [actions (get-actions g input)
           events (cwe/current-events g actions)
           g (tic g actions events)]
-      (if (= (g :status) :running) (recur g))))
-  (println "Game Over"))
+      (if (= (g :status) :running)
+        (recur g)
+        (game-over g)))))

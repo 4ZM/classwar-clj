@@ -11,7 +11,7 @@
    :desc "Give up"
    :duration 0
    :effort 0
-   :action (fn [g _ _ _] (assoc-in g [:status] :game-over))})
+   :action (fn [g _ _ _] (assoc-in g [:status] :surender))})
 
 (defn adj-level [level op val]
   (max (min 1.0 (op level val)) 0.0))
@@ -19,19 +19,20 @@
 (def demo-template
   {:id :demo
    :desc "Organize demonstration"
-   :type :tmp
-   :effort :tmp
+   :type nil   ; To be filled in
+   :effort nil ; To be filled in
    :action
    (fn [g a _ _]
      (cond
       (= (a :type) :antifa)
       (-> g
-          (update-in [:facists :activity] adj-level - 0.01) ;; fight facists
-          (update-in [:activists] + 2)) ;; recruit activists
-      (= (a :type) :anticap) (update-in g [:capitalists :activity] - 0.01)))})
+          (update-in [:fascists :activity] adj-level - 0.01)
+          (update-in [:prospects] + 2))
+      (= (a :type) :anticap)
+      (update-in g [:capitalists :activity] - 0.01)))})
 
 (defn create-demo [type activists]
-  (-> demo
+  (-> demo-template
       (assoc-in [:type] type)
       (assoc-in [:effort] activists)
       (assoc-in [:desc] (cond
@@ -47,7 +48,7 @@
    :action
    (fn [g _ _ _]
      (-> g
-         (update-in [:activists] + 1)
+         (update-in [:prospects] + 1)
          (update-in [:fascists :activity] adj-level - 0.01)
          (update-in [:political-climate] - 0.01)))})
 
@@ -58,7 +59,7 @@
    :action
    (fn [g _ _ _]
      (-> g
-         (update-in [:activists] + 1)
+         (update-in [:prospects] + 1)
          (update-in [:money] + 5000)))})
 
 (defn antifa-group-action [g institution _ _]
@@ -116,3 +117,9 @@
 (def start-paper)
 (def start-book-cafe)
 (def start-comunity-center)
+(def build-printshop)
+(def occupy-abandoned-building)
+(def start-hackerspace)
+(def start-activist-food-truck)
+(def strike)
+(def general-strike)
