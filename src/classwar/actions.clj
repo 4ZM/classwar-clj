@@ -18,9 +18,6 @@
 
 (def demo-template
   {:id :demo
-   :desc "Organize demonstration"
-   :type nil   ; To be filled in
-   :effort nil ; To be filled in
    :action
    (fn [g a _ _]
      (cond
@@ -32,14 +29,14 @@
       (update-in g [:capitalists :activity] - 0.01)))})
 
 (defn create-demo [type activists]
-  (-> demo-template
-      (assoc-in [:type] type)
-      (assoc-in [:effort] activists)
-      (assoc-in [:desc] (cond
-                         (= type :antifa)
-                         "Organize Antifa demonstration"
-                         (= type :anticap)
-                         "Orgnaize anti-capitalist demonstration"))))
+  (merge demo-template
+         {:type type
+          :effort activists
+          :desc (cond
+                 (= type :antifa)
+                 "Organize Antifa demonstration"
+                 (= type :anticap)
+                 "Orgnaize anti-capitalist demonstration")}))
 
 (def online-campaign
   {:id :online-campaign

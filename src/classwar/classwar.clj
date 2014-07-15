@@ -56,27 +56,27 @@
 
 (defn execute-actions [game actions events]
   (let [action-fns (map (fn [a] (fn [g] ((a :action) g a actions events)))
-                        actions)
-        action-chain-fn (apply comp action-fns)]
-    (action-chain-fn game)))
+                        actions)]
+    ((apply comp action-fns) game)))
 
 (defn institution-updates [game actions events]
   (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i actions events)))
-                             (game :institutions))
-        institution-chain-fn (apply comp institution-fns)]
-    (institution-chain-fn game)))
+                             (game :institutions))]
+    ((apply comp institution-fns) game)))
 
 (defn execute-events [game actions events]
-  (let [event-fns (map :action events)
-        event-chain-fn (apply comp event-fns)]
-    (event-chain-fn game)))
+  (let [event-fns (map :action events)]
+    ((apply comp event-fns) game)))
+
+(defn max-recruitment [{activists :activists prospects :prospects :as g}]
+  (let [space (- (activist-capacity g) activists)]
+    (min space prospects)))
 
 (defn recruit-activists [g]
-  (let [space (- (activist-capacity g) (g :activists))
-        new-activists (min space (g :prospects))]
-    (-> g
-        (update-in [:activists] + new-activists)
-        (assoc-in [:prospects] 0))))
+  (-> g
+      (->/as (-> max-recruitment new-activists)
+             (update-in [:activists] + new-activists)) ; update will be in clj 1.7
+      (assoc :prospects 0)))
 
 (defn update-opponent-power [g]
   (-> g
@@ -84,37 +84,30 @@
       (update-in [:capitalists :power] + (-> g :capitalists :activity))))
 
 (defn update-game-status [g]
-  (if (>= (-> g :fascists :power) 1.0)
-    (assoc-in g [:status] :fascists-win) g))
+  (-> g
+      (cond->
+       (>= (-> g :fascists :power) 1.0)
+       (assoc :status :fascists-win))
+      (cond->
+       (>= (-> g :capitalists :power) 1.0)
+       (assoc :status :capitalists-win))))
 
 (defn tic [game actions events]
-
-  (let [g (atom game)]
-
-    ;; Do all the actions
-    (reset! g (execute-actions @g actions events))
-
-    ;; Let institutions act
-    (reset! g (institution-updates @g actions events))
-
-    ;; Let events play out
-    (reset! g (execute-events @g actions events))
-
-    (reset! g (recruit-activists @g))
-    (reset! g (update-opponent-power @g))
-    (reset! g (update-game-status @g))
-
-    ;; Advance to next day
-    (reset! g (update-in @g [:day] inc))
-
-    ;; Return new game state
-    @g))
+  (-> game
+      (execute-actions actions events)
+      (institution-updates actions events)
+      (execute-events actions events)
+      recruit-activists
+      update-opponent-power
+      update-game-status
+      (update-in [:day] inc)))
 
 (defn game-over [g]
   (println "GAME OVER")
   (case (g :status)
     :surender (println " > You give up")
-    :fascists-win (println " > Fascists Win - You lose")))
+    :fascists-win (println " > Fascists Win - You lose")
+    :capitalists-win (println " > Capitalists Win - You lose")))
 
 (defn play [input]
   (loop [g  (setup-game)]

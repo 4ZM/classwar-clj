@@ -7,7 +7,7 @@
    :action (fn [g]
              (println "EVENT! Police takes notice!")
              (-> g
-                 (assoc-in [:police-noticed] true)
+                 (assoc :police-noticed true)
                  (update-in [:police-repression] + 0.01)))})
 
 (def all-events
