@@ -54,44 +54,55 @@
         opts (available-options g available-activists)]
     [(cwui/action-menu opts input)]))
 
+(defn execute-actions [game actions events]
+  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a actions events)))
+                        actions)
+        action-chain-fn (apply comp action-fns)]
+    (action-chain-fn game)))
+
+(defn institution-updates [game actions events]
+  (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i actions events)))
+                             (game :institutions))
+        institution-chain-fn (apply comp institution-fns)]
+    (institution-chain-fn game)))
+
+(defn execute-events [game actions events]
+  (let [event-fns (map :action events)
+        event-chain-fn (apply comp event-fns)]
+    (event-chain-fn game)))
+
+(defn recruit-activists [g]
+  (let [space (- (activist-capacity g) (g :activists))
+        new-activists (min space (g :prospects))]
+    (-> g
+        (update-in [:activists] + new-activists)
+        (assoc-in [:prospects] 0))))
+
+(defn update-opponent-power [g]
+  (-> g
+      (update-in [:fascists :power] + (-> g :fascists :activity))
+      (update-in [:capitalists :power] + (-> g :capitalists :activity))))
+
+(defn update-game-status [g]
+  (if (>= (-> g :fascists :power) 1.0)
+    (assoc-in g [:status] :fascists-win) g))
+
 (defn tic [game actions events]
 
   (let [g (atom game)]
 
     ;; Do all the actions
-    ;; (doall
-    ;;  (for [a actions]
-    ;;    (reset! g ((a :action) @g a actions events))))
-
-    (let [action-fns (map (fn [a] (fn [g] ((a :action) g a actions events))) actions)
-          action-chain-fn (apply comp action-fns)]
-      (reset! g (action-chain-fn @g)))
+    (reset! g (execute-actions @g actions events))
 
     ;; Let institutions act
-    (doall
-     (for [i (@g :institutions)]
-       (reset! g ((i :action) @g i actions events))))
+    (reset! g (institution-updates @g actions events))
 
     ;; Let events play out
-    (doall
-     (for [e events]
-       (do (println "EVENT! " (e :desc))
-           (reset! g ((e :action) @g)))))
+    (reset! g (execute-events @g actions events))
 
-    ;; Do game logic
-
-    ;; Get new activists
-    (let [space (- (activist-capacity @g) (@g :activists))
-          new-activists (min space (@g :prospects))]
-      (reset! g (update-in @g [:activists] + new-activists)))
-    (reset! g (assoc-in @g [:prospects] 0))
-
-    ;; Update opponents power
-    (reset! g (update-in @g [:fascists :power] + (-> game :fascists :activity)))
-    (reset! g (update-in @g [:capitalists :power] + (-> game :capitalists :activity)))
-
-    ;; Check termination
-    (if (>= (-> @g :fascists :power) 1.0) (reset! g (assoc-in @g [:status] :fascists-win)))
+    (reset! g (recruit-activists @g))
+    (reset! g (update-opponent-power @g))
+    (reset! g (update-game-status @g))
 
     ;; Advance to next day
     (reset! g (update-in @g [:day] inc))
