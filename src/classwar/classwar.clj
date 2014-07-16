@@ -95,8 +95,8 @@
 
 (defn update-opponent-power [g]
   (-> g
-      (update-in [:fascists :power] + (-> g :fascists :activity))
-      (update-in [:capitalists :power] + (-> g :capitalists :activity))))
+      (update-in [:fascists :power] + (* 0.1 (-> g :fascists :activity)))
+      (update-in [:capitalists :power] + (* 0.1 (-> g :capitalists :activity)))))
 
 (defn update-game-status [g]
   (-> g
@@ -107,6 +107,18 @@
        (>= (-> g :capitalists :power) 1.0)
        (assoc :status :capitalists-win))))
 
+(defn last-n-days-actions [n {actions :actions}]
+  (flatten (take n (reverse actions))))
+
+(defn some-action-last-n-days [n tag {actions :actions :as game}]
+  (some #{tag} (map :id (last-n-days-actions n game))))
+
+(defn collect-money [g]
+  (let [free-activists (g :activists)
+        bound-activists (keep :activists (g :insitutions))
+        all-activists (reduce + free-activists bound-activists)]
+    (* all-activists 5)))
+
 (defn tic [game actions events]
   (-> game
       (update-in [:actions] conj actions)
@@ -114,6 +126,19 @@
       execute-actions
       institution-updates
       execute-events
+      ;; Posters have some effect for 3 days
+      (->/as game
+             (cond-> (some-action-last-n-days 3 :posters game)
+                     (update-in [:revolutionary-potential] cwa/adj-level + 0.01)))
+      ;; Stickers have some effect for 5 days
+      (->/as game
+             (cond-> (some-action-last-n-days 5 :stickers game)
+                     (update-in [:revolutionary-potential] cwa/adj-level + 0.01)))
+
+      ;; Collect money from members
+      (->/as game
+             (update-in [:money] + (collect-money game)))
+
       recruit-activists
       update-opponent-power
       update-game-status

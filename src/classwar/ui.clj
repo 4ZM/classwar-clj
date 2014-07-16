@@ -8,9 +8,10 @@
 
 (defn show-game-overview [g]
   (println (format "Game overview, day %d" (g :day)))
-  (println (format "  Activists: %d  Workforce: %2.2f  Revolution: %2.2f"
+  (println (format "  Activists: %d  Workforce: %2.2f  Money: %d  Revolution: %2.2f"
                    (g :activists)
                    (g :organized-workforce)
+                   (g :money)
                    (g :revolutionary-potential)))
   (println (format "  Fascists>    Power: %2.2f  Activity: %2.2f"
                    (-> g :fascists :power)

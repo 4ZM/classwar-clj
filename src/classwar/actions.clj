@@ -82,7 +82,9 @@
    :effort 1
    :action
    (fn [g _]
-     (update-in g [:revolutionary-potential] adj-level + 0.01))})
+     (-> g
+         (update-in [:revolutionary-potential] adj-level + 0.01)
+         (update-in [:money] - 50)))})
 
 (def posters
   {:id :posters
@@ -92,17 +94,17 @@
    (fn [g _]
      (-> g
          (update-in [:police-repression] adj-level + 0.01)
-         (update-in [:revolutionary-potential] adj-level + 0.01)))})
+         (update-in [:money] - 100)))})
 
 (def stickers
-  {:id :posters
+  {:id :stickers
    :desc "Stickers"
    :effort 2
    :action
    (fn [g _]
      (-> g
          (update-in [:police-repression] adj-level + 0.01)
-         (update-in [:revolutionary-potential] adj-level + 0.01)))})
+         (update-in [:money] - 200)))})
 
 (def reclaim-party)
 (def occupy-university)
