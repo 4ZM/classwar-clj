@@ -11,7 +11,7 @@
 
 (defn setup-game []
   "Create initial game state"
-  {:day 1
+  {:day 0
 
    :activists                  5  ;; Number of
    :prospects                  0  ;; Possible recruits
@@ -34,6 +34,9 @@
 
    :police-noticed         false  ;; Police knows about the movement
 
+   :actions                   []  ;; All actions (indexed by day)
+   :events                    []  ;; All events (indexed by day)
+
    :status :running})
 
 (defn available-options [g available-activists]
@@ -54,23 +57,35 @@
         opts (available-options g available-activists)]
     [(cwui/action-menu opts input)]))
 
-(defn execute-actions [game actions events]
-  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a actions events)))
-                        actions)]
+(defn todays-actions [{day :day actions :actions}]
+  (if (< day (count actions))
+    (actions day)
+    []))
+
+(defn todays-events [{day :day events :events}]
+  (if (< day (count events))
+    (events day)
+    []))
+
+
+(defn execute-actions [game]
+  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a)))
+                        (todays-actions game))]
     ((apply comp action-fns) game)))
 
-(defn institution-updates [game actions events]
-  (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i actions events)))
+(defn institution-updates [game]
+  (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i)))
                              (game :institutions))]
     ((apply comp institution-fns) game)))
 
-(defn execute-events [game actions events]
-  (let [event-fns (map :action events)]
+(defn execute-events [game]
+  (let [event-fns (map :action (todays-events game))]
     ((apply comp event-fns) game)))
 
 (defn max-recruitment [{activists :activists prospects :prospects :as g}]
   (let [space (- (activist-capacity g) activists)]
     (min space prospects)))
+
 
 (defn recruit-activists [g]
   (-> g
@@ -94,9 +109,11 @@
 
 (defn tic [game actions events]
   (-> game
-      (execute-actions actions events)
-      (institution-updates actions events)
-      (execute-events actions events)
+      (update-in [:actions] conj actions)
+      (update-in [:events] conj events)
+      execute-actions
+      institution-updates
+      execute-events
       recruit-activists
       update-opponent-power
       update-game-status

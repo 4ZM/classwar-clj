@@ -4,14 +4,14 @@
   {:id :nop
    :desc "Keep playing"
    :effort 0
-   :action (fn [g _ _ _] g)})
+   :action (fn [g _] g)})
 
 (def surender
   {:id :surender
    :desc "Give up"
    :duration 0
    :effort 0
-   :action (fn [g _ _ _] (assoc-in g [:status] :surender))})
+   :action (fn [g _] (assoc-in g [:status] :surender))})
 
 (defn adj-level [level op val]
   (max (min 1.0 (op level val)) 0.0))
@@ -19,7 +19,7 @@
 (def demo-template
   {:id :demo
    :action
-   (fn [g a _ _]
+   (fn [g a]
      (cond
       (= (a :type) :antifa)
       (-> g
@@ -43,7 +43,7 @@
    :desc "Start online campaign"
    :effort 2
    :action
-   (fn [g _ _ _]
+   (fn [g _]
      (-> g
          (update-in [:prospects] + 1)
          (update-in [:fascists :activity] adj-level - 0.01)
@@ -54,7 +54,7 @@
    :desc "Support party"
    :effort 5
    :action
-   (fn [g _ _ _]
+   (fn [g _]
      (-> g
          (update-in [:prospects] + 1)
          (update-in [:money] + 5000)))})
@@ -67,7 +67,7 @@
    :desc "Start an antifa group"
    :effort 5
    :action
-   (fn [g a _ _]
+   (fn [g a]
      (let [req-activists (a :effort)]
        (-> g
            (update-in [:activists] - req-activists)
@@ -81,7 +81,7 @@
    :desc "Handout flyers"
    :effort 1
    :action
-   (fn [g _ _ _]
+   (fn [g _]
      (update-in g [:revolutionary-potential] adj-level + 0.01))})
 
 (def posters
@@ -89,7 +89,7 @@
    :desc "Stick up posters"
    :effort 2
    :action
-   (fn [g _ _ _]
+   (fn [g _]
      (-> g
          (update-in [:police-repression] adj-level + 0.01)
          (update-in [:revolutionary-potential] adj-level + 0.01)))})
@@ -99,7 +99,7 @@
    :desc "Stickers"
    :effort 2
    :action
-   (fn [g _ _ _]
+   (fn [g _]
      (-> g
          (update-in [:police-repression] adj-level + 0.01)
          (update-in [:revolutionary-potential] adj-level + 0.01)))})
