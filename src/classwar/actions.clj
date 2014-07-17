@@ -1,4 +1,5 @@
-(ns classwar.actions)
+(ns classwar.actions
+  (:require [lonocloud.synthread :as ->]))
 
 (def nop
   {:id :nop
@@ -20,13 +21,15 @@
   {:id :demo
    :action
    (fn [g a]
-     (cond
-      (= (a :type) :antifa)
-      (-> g
-          (update-in [:fascists :activity] adj-level - 0.01)
-          (update-in [:prospects] + 2))
-      (= (a :type) :anticap)
-      (update-in g [:capitalists :activity] - 0.01)))})
+     (-> g
+         (update-in [:prospects] + 2)
+         (->/when (= (a :type) :antifa)
+           (update-in [:fascists :power] adj-level - 0.01)
+           (update-in [:fascists :activity] adj-level - 0.01))
+         (->/when (= (a :type) :anticap)
+           (update-in [:capitalists :power] adj-level - 0.1)
+           (update-in [:capitalists :activity] adj-level - 0.01)
+           (update-in [:political-climate] - 0.01))))})
 
 (defn create-demo [type activists]
   (merge demo-template
@@ -59,7 +62,7 @@
          (update-in [:prospects] + 1)
          (update-in [:money] + 5000)))})
 
-(defn antifa-group-action [g institution _ _]
+(defn antifa-group-action [g institution]
   (update-in g [:fascists :activity] adj-level - 0.01))
 
 (def start-antifa-group
@@ -72,7 +75,8 @@
        (-> g
            (update-in [:activists] - req-activists)
            (update-in [:institutions] conj
-                      {:type :antifa-group
+                      {:id :antifa-group
+                       :desc "Antifa Group"
                        :activists req-activists
                        :action antifa-group-action}))))})
 
@@ -105,6 +109,26 @@
      (-> g
          (update-in [:police-repression] adj-level + 0.01)
          (update-in [:money] - 200)))})
+
+
+(defn comunity-center-action [g institution]
+  (update-in g [:political-climate] - 0.01))
+
+(def start-comunity-center
+  {:id :comunity-center
+   :desc "Start a comunity center"
+   :effort 5
+   :action
+   (fn [g a]
+     (let [req-activists (a :effort)]
+       (-> g
+           (update-in [:activists] - req-activists)
+           (update-in [:institutions] conj
+                      {:id :comunity-center
+                       :desc "Comunity Center"
+                       :activists req-activists
+                       :action comunity-center-action}))))})
+
 
 (def reclaim-party)
 (def occupy-university)

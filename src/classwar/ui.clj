@@ -21,7 +21,8 @@
                    (-> g :capitalists :activity)))
   (println (format "  Police Repression: %2.2f  Political Climate: %2.2f"
                    (g :police-repression)
-                   (g :political-climate))))
+                   (g :political-climate)))
+  (println "  Institutions:" (str/join ", " (map :desc (g :institutions)))))
 
 (defn- format-menu-option [i opt]
   (format "  %d. %s [%d A]" i (opt :desc) (opt :effort)))

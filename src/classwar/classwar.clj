@@ -6,8 +6,10 @@
 
 (defn activist-capacity [g]
   "Max number of activists that can be organized"
-  ;; Inc with better infrastructure
-  10)
+  (cond
+   (some #{:comunity-center} (map :id (g :institutions))) 30
+   :default 10
+   ))
 
 (defn setup-game []
   "Create initial game state"
@@ -44,6 +46,7 @@
                  cwa/surender
                  (cwa/create-demo :antifa 5)
                  (cwa/create-demo :anticap 5)
+                 cwa/start-comunity-center
                  cwa/handout-flyers
                  cwa/posters
                  cwa/stickers
@@ -56,6 +59,7 @@
   (let [available-activists (g :activists)
         opts (available-options g available-activists)]
     [(cwui/action-menu opts input)]))
+
 
 (defn todays-actions [{day :day actions :actions}]
   (if (< day (count actions))
@@ -82,10 +86,11 @@
   (let [event-fns (map :action (todays-events game))]
     ((apply comp event-fns) game)))
 
+
+
 (defn max-recruitment [{activists :activists prospects :prospects :as g}]
   (let [space (- (activist-capacity g) activists)]
     (min space prospects)))
-
 
 (defn recruit-activists [g]
   (-> g
@@ -126,6 +131,7 @@
       execute-actions
       institution-updates
       execute-events
+
       ;; Posters have some effect for 3 days
       (->/as game
              (cond-> (some-action-last-n-days 3 :posters game)
