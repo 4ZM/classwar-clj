@@ -56,6 +56,7 @@
   {:id :party
    :desc "Support party"
    :effort 5
+   :cost 1000
    :action
    (fn [g _]
      (-> g
@@ -84,31 +85,31 @@
   {:id :handout-flyers
    :desc "Handout flyers"
    :effort 1
+   :cost 50
    :action
    (fn [g _]
      (-> g
-         (update-in [:revolutionary-potential] adj-level + 0.01)
-         (update-in [:money] - 50)))})
+         (update-in [:revolutionary-potential] adj-level + 0.01)))})
 
 (def posters
   {:id :posters
    :desc "Stick up posters"
    :effort 2
+   :cost 100
    :action
    (fn [g _]
      (-> g
-         (update-in [:police-repression] adj-level + 0.01)
-         (update-in [:money] - 100)))})
+         (update-in [:police-repression] adj-level + 0.01)))})
 
 (def stickers
   {:id :stickers
    :desc "Stickers"
    :effort 2
+   :cost 200
    :action
    (fn [g _]
      (-> g
-         (update-in [:police-repression] adj-level + 0.01)
-         (update-in [:money] - 200)))})
+         (update-in [:police-repression] adj-level + 0.01)))})
 
 
 (defn comunity-center-action [g institution]
@@ -118,6 +119,7 @@
   {:id :comunity-center
    :desc "Start a comunity center"
    :effort 5
+   :cost 1000
    :action
    (fn [g a]
      (let [req-activists (a :effort)]

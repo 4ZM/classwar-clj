@@ -44,7 +44,11 @@
 (defn has-institution? [id {institutions :institutions}]
   (some #{id} (map :id institutions)))
 
-(defn available-options [g available-activists]
+(defn nil-or-lt? [val other]
+  "true if val is nil or < other"
+  (or (nil? val) (< val other)))
+
+(defn available-options [g available-activists available-money]
   (let [actions [cwa/nop
                  cwa/surender
                  (cwa/create-demo :antifa 5)
@@ -55,19 +59,21 @@
                  cwa/online-campaign
                  cwa/party
                  cwa/reclaim-party]
-        activist-filter (partial filter #(< (% :effort) available-activists))]
+        activist-filter (partial filter #(nil-or-lt? (% :effort) available-activists))
+        cost-filter (partial filter #(nil-or-lt? (% :cost) available-money))]
     (-> actions
         (cond-> (not (has-institution? :union g))
                 (conj cwa/start-union))
         (cond-> (not (has-institution? :comunity-center g))
                 (conj cwa/start-comunity-center))
-        (cond-> (not (has-institution? :antifa-group))
+        (cond-> (not (has-institution? :antifa-group g))
                 (conj cwa/start-antifa-group))
-        activist-filter)))
+        activist-filter
+        cost-filter)))
 
 (defn get-actions [g input]
   (let [available-activists (g :activists)
-        opts (available-options g available-activists)]
+        opts (available-options g available-activists (g :money))]
     [(cwui/action-menu opts input)]))
 
 
@@ -83,9 +89,13 @@
 
 
 (defn execute-actions [game]
-  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a)))
-                        (todays-actions game))]
-    ((apply comp action-fns) game)))
+  (let [todays (todays-actions game)
+        todays-expenses (reduce + (keep :cost todays))
+        action-fns (map (fn [a] (fn [g] ((a :action) g a))) todays)]
+
+    (-> game
+        (update-in [:money] - todays-expenses)
+        ((apply comp action-fns)))))
 
 (defn institution-updates [game]
   (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i)))
