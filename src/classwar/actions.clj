@@ -130,11 +130,41 @@
                        :action comunity-center-action}))))})
 
 
-(def reclaim-party)
+(def reclaim-party
+  {:id :reclaim-party
+   :desc "Reclaim the Streets party"
+   :effort 20
+   :action
+   (fn [g _]
+     (-> g
+         (update-in [:prospects] + 5)
+         (update-in [:police-repression] adj-level + 0.05)))})
+
+
+
+(defn union-action [g institution]
+  (-> g
+      (update-in [:political-climate] - 0.001)
+      (update-in [:organized-workforce] + 0.005)))
+
+(def start-union
+  {:id :start-union
+   :desc "Start a Union"
+   :effort 10
+   :action
+   (fn [g a]
+     (let [req-activists (a :effort)]
+       (-> g
+           (update-in [:activists] - req-activists)
+           (update-in [:institutions] conj
+                      {:id :union
+                       :desc "Union"
+                       :activists req-activists
+                       :action union-action}))))})
+
+
+(def strike)
 (def occupy-university)
-
-
-(def start-union)
 (def start-anticap-group)
 (def start-adbusting-group)
 (def start-paper)
@@ -144,5 +174,5 @@
 (def occupy-abandoned-building)
 (def start-hackerspace)
 (def start-activist-food-truck)
-(def strike)
+
 (def general-strike)

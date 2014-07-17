@@ -41,19 +41,29 @@
 
    :status :running})
 
+(defn has-institution? [id {institutions :institutions}]
+  (some #{id} (map :id institutions)))
+
 (defn available-options [g available-activists]
   (let [actions [cwa/nop
                  cwa/surender
                  (cwa/create-demo :antifa 5)
                  (cwa/create-demo :anticap 5)
-                 cwa/start-comunity-center
                  cwa/handout-flyers
                  cwa/posters
                  cwa/stickers
                  cwa/online-campaign
                  cwa/party
-                 cwa/start-antifa-group]]
-    (filter #(< (% :effort) available-activists) actions)))
+                 cwa/reclaim-party]
+        activist-filter (partial filter #(< (% :effort) available-activists))]
+    (-> actions
+        (cond-> (not (has-institution? :union g))
+                (conj cwa/start-union))
+        (cond-> (not (has-institution? :comunity-center g))
+                (conj cwa/start-comunity-center))
+        (cond-> (not (has-institution? :antifa-group))
+                (conj cwa/start-antifa-group))
+        activist-filter)))
 
 (defn get-actions [g input]
   (let [available-activists (g :activists)
