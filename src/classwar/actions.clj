@@ -165,6 +165,13 @@
                        :action union-action}))))})
 
 
+(def revolution
+  {:id :revolution
+   :desc "Revolution"
+   :effort 10
+   :action (fn [g _] g)})
+
+
 (def strike)
 (def occupy-university)
 (def start-anticap-group)

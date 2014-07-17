@@ -48,6 +48,11 @@
   "true if val is nil or < other"
   (or (nil? val) (< val other)))
 
+(defn revolution-available? [g]
+  (and (has-institution? :union g)
+       (has-institution? :comunity-center g)
+       (has-institution? :antifa-group g)))
+
 (defn available-options [g available-activists available-money]
   (let [actions [cwa/nop
                  cwa/surender
@@ -68,6 +73,8 @@
                 (conj cwa/start-comunity-center))
         (cond-> (not (has-institution? :antifa-group g))
                 (conj cwa/start-antifa-group))
+        (cond-> (revolution-available? g)
+                (conj cwa/revolution))
         activist-filter
         cost-filter)))
 
@@ -126,6 +133,9 @@
 (defn update-game-status [g]
   (-> g
       (cond->
+       (some #{:revolution} (map :id (todays-actions g)))
+       (assoc :status :revolution))
+      (cond->
        (>= (-> g :fascists :power) 1.0)
        (assoc :status :fascists-win))
       (cond->
@@ -174,6 +184,7 @@
   (println "GAME OVER")
   (case (g :status)
     :surender (println " > You give up")
+    :revolution (println " > Revolution! You win!")
     :fascists-win (println " > Fascists Win - You lose")
     :capitalists-win (println " > Capitalists Win - You lose")))
 
