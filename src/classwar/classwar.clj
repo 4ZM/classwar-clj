@@ -31,21 +31,17 @@
 
    :political-climate       0.00  ;; -1 to 1 (left / right)
 
-   :institutions              []  ;; Support groups and structures
+   :institutions             #{}  ;; Support groups and structures
 
    :police-noticed         false  ;; Police knows about the movement
 
    :actions                  #{}  ;; Running actions to be executed
-   :events                    []  ;; All events (indexed by day)
+   :events                   #{}  ;; Running events to be executed
 
    :status :running})
 
 (defn has-institution? [id {institutions :institutions}]
   (some #{id} (map :id institutions)))
-
-(defn nil-or-lt? [val other]
-  "true if val is nil or < other"
-  (or (nil? val) (< val other)))
 
 (defn revolution-available? [g]
   (and (has-institution? :union g)
@@ -63,8 +59,8 @@
                  cwa/online-campaign
                  cwa/party
                  cwa/reclaim-party]
-        activist-filter (partial filter #(nil-or-lt? (% :effort) available-activists))
-        cost-filter (partial filter #(nil-or-lt? (% :cost) available-money))]
+        activist-filter (partial filter #(< (cwa/effort %) available-activists))
+        cost-filter (partial filter #(< (cwa/cost %) available-money))]
     (-> actions
         (cond-> (not (has-institution? :union g))
                 (conj cwa/start-union))
@@ -82,26 +78,14 @@
         opts (available-options g available-activists (g :money))]
     [(cwui/action-menu opts input)]))
 
-
-(defn todays-events [{day :day events :events}]
-  (if (< day (count events))
-    (events day)
-    []))
-
-(defn execute-actions [game]
+(defn- execute-ops [game op-tag]
   (let [action-fns (map (fn [a] (fn [g] ((a :action) g a)))
                         (game :actions))]
     ((apply comp action-fns) game)))
 
-(defn institution-updates [game]
-  (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i)))
-                             (game :institutions))]
-    ((apply comp institution-fns) game)))
-
-(defn execute-events [game]
-  (let [event-fns (map :action (todays-events game))]
-    ((apply comp event-fns) game)))
-
+(defn execute-actions [game] (execute-ops game :actions))
+(defn institution-updates [game] (execute-ops game :institutions))
+(defn execute-events [game] (execute-ops game :events))
 
 
 (defn max-recruitment [{activists :activists prospects :prospects :as g}]
@@ -134,21 +118,20 @@
 (defn collect-money [g]
   (let [free-activists (g :activists)
         bound-activists (keep :activists (g :insitutions))
-        all-activists (reduce + free-activists bound-activists)]
-    (* all-activists 5)))
+        all-activists (reduce + free-activists bound-activists)
+        collected-money (* all-activists 5)]
+    (update-in g [:money] + collected-money)))
 
 (defn tic [game actions events]
   (-> game
       (update-in [:actions] into actions)
       (update-in [:events] conj events)
+
       execute-actions
       institution-updates
       execute-events
 
-      ;; Collect money from members
-      (->/as game
-             (update-in [:money] + (collect-money game)))
-
+      collect-money
       recruit-activists
       update-opponent-power
       update-game-status

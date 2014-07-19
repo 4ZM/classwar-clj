@@ -6,8 +6,9 @@
 
 (defn- extended-action? [a] (contains? a :duration))
 
-(defn- cost [a] (get a :cost 0))
-(defn- duration [a] (get a :duration 1))
+(defn cost [a] (get a :cost 0))
+(defn effort [a] (get a :effort 0))
+(defn duration [a] (get a :duration 1))
 (defn- running [a] (get a :running 1))
 
 (defn- first-day? [a] (= (running a) 1))
