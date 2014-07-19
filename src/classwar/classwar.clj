@@ -8,8 +8,7 @@
   "Max number of activists that can be organized"
   (cond
    (some #{:comunity-center} (map :id (g :institutions))) 30
-   :default 10
-   ))
+   :default 10))
 
 (defn setup-game []
   "Create initial game state"
@@ -36,7 +35,7 @@
 
    :police-noticed         false  ;; Police knows about the movement
 
-   :actions                   []  ;; All actions (indexed by day)
+   :actions                  #{}  ;; Running actions to be executed
    :events                    []  ;; All events (indexed by day)
 
    :status :running})
@@ -84,25 +83,15 @@
     [(cwui/action-menu opts input)]))
 
 
-(defn todays-actions [{day :day actions :actions}]
-  (if (< day (count actions))
-    (actions day)
-    []))
-
 (defn todays-events [{day :day events :events}]
   (if (< day (count events))
     (events day)
     []))
 
-
 (defn execute-actions [game]
-  (let [todays (todays-actions game)
-        todays-expenses (reduce + (keep :cost todays))
-        action-fns (map (fn [a] (fn [g] ((a :action) g a))) todays)]
-
-    (-> game
-        (update-in [:money] - todays-expenses)
-        ((apply comp action-fns)))))
+  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a)))
+                        (game :actions))]
+    ((apply comp action-fns) game)))
 
 (defn institution-updates [game]
   (let [institution-fns (map (fn [i] (fn [g] ((i :action) g i)))
@@ -133,7 +122,7 @@
 (defn update-game-status [g]
   (-> g
       (cond->
-       (some #{:revolution} (map :id (todays-actions g)))
+       (some #{:revolution} (map :id (g :actions)))
        (assoc :status :revolution))
       (cond->
        (>= (-> g :fascists :power) 1.0)
@@ -141,12 +130,6 @@
       (cond->
        (>= (-> g :capitalists :power) 1.0)
        (assoc :status :capitalists-win))))
-
-(defn last-n-days-actions [n {actions :actions}]
-  (flatten (take n (reverse actions))))
-
-(defn some-action-last-n-days [n tag {actions :actions :as game}]
-  (some #{tag} (map :id (last-n-days-actions n game))))
 
 (defn collect-money [g]
   (let [free-activists (g :activists)
@@ -156,20 +139,11 @@
 
 (defn tic [game actions events]
   (-> game
-      (update-in [:actions] conj actions)
+      (update-in [:actions] into actions)
       (update-in [:events] conj events)
       execute-actions
       institution-updates
       execute-events
-
-      ;; Posters have some effect for 3 days
-      (->/as game
-             (cond-> (some-action-last-n-days 3 :posters game)
-                     (update-in [:revolutionary-potential] cwa/adj-level + 0.01)))
-      ;; Stickers have some effect for 5 days
-      (->/as game
-             (cond-> (some-action-last-n-days 5 :stickers game)
-                     (update-in [:revolutionary-potential] cwa/adj-level + 0.01)))
 
       ;; Collect money from members
       (->/as game

@@ -1,21 +1,57 @@
 (ns classwar.actions
   (:require [lonocloud.synthread :as ->]))
 
+(defn- remove-action [g a]
+  (update-in g [:actions] disj a))
+
+(defn- extended-action? [a] (contains? a :duration))
+
+(defn- cost [a] (get a :cost 0))
+(defn- duration [a] (get a :duration 1))
+(defn- running [a] (get a :running 1))
+
+(defn- first-day? [a] (= (running a) 1))
+(defn- last-day? [a] (= (running a) (duration a)))
+
+(defn- update-action [g old-action new-action]
+  (-> g
+      (update-in [:actions] disj old-action)
+      (update-in [:actions] conj new-action)))
+
+(defn- adj-level [level op val]
+  (max (min 1.0 (op level val)) 0.0))
+
+(defn- action-helper [func]
+  (fn [g a]
+    (-> g
+        ;; Spend moneyz on the first day
+        (cond-> (first-day? a)
+                (update-in [:money] - (cost a)))
+
+        ;; Run action
+        (func a)
+
+        (->/if (last-day? a)
+          ;; Remove action on last day
+          (remove-action a)
+
+          ;; Count up running days
+          (update-action a (assoc a :running (inc (running a))))))))
+
 (def nop
   {:id :nop
    :desc "Keep playing"
    :effort 0
-   :action (fn [g _] g)})
+   :action (action-helper (fn [g a] g))})
 
 (def surender
   {:id :surender
    :desc "Give up"
-   :duration 0
    :effort 0
-   :action (fn [g _] (assoc-in g [:status] :surender))})
-
-(defn adj-level [level op val]
-  (max (min 1.0 (op level val)) 0.0))
+   :action (action-helper
+            (fn [g a]
+              (-> g
+                  (assoc-in [:status] :surender))))})
 
 (def demo-template
   {:id :demo
@@ -45,12 +81,20 @@
   {:id :online-campaign
    :desc "Start online campaign"
    :effort 2
+   :duration 5
    :action
-   (fn [g _]
-     (-> g
-         (update-in [:prospects] + 1)
-         (update-in [:fascists :activity] adj-level - 0.01)
-         (update-in [:political-climate] - 0.01)))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          ;; First day
+          (->/when (first-day? a)
+            (update-in [:activists] - 2)
+            (update-in [:fascists :activity] adj-level - 0.01))
+
+          ;; All days
+          (update-in [:fascists :power] adj-level - 0.01)
+          (update-in [:political-climate] - 0.01)
+          (update-in [:prospects] + 1))))})
 
 (def party
   {:id :party
@@ -58,10 +102,11 @@
    :effort 5
    :cost 1000
    :action
-   (fn [g _]
-     (-> g
-         (update-in [:prospects] + 1)
-         (update-in [:money] + 5000)))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          (update-in [:prospects] + 1)
+          (update-in [:money] + 5000))))})
 
 (defn antifa-group-action [g institution]
   (update-in g [:fascists :activity] adj-level - 0.01))
@@ -71,15 +116,15 @@
    :desc "Start an antifa group"
    :effort 5
    :action
-   (fn [g a]
-     (let [req-activists (a :effort)]
-       (-> g
-           (update-in [:activists] - req-activists)
-           (update-in [:institutions] conj
-                      {:id :antifa-group
-                       :desc "Antifa Group"
-                       :activists req-activists
-                       :action antifa-group-action}))))})
+   (action-helper
+    (fn [g {activists :effort}]
+      (-> g
+          (update-in [:activists] - activists)
+          (update-in [:institutions] conj
+                     {:id :antifa-group
+                      :desc "Antifa Group"
+                      :activists activists
+                      :action antifa-group-action}))))})
 
 (def handout-flyers
   {:id :handout-flyers
@@ -87,29 +132,44 @@
    :effort 1
    :cost 50
    :action
-   (fn [g _]
-     (-> g
-         (update-in [:revolutionary-potential] adj-level + 0.01)))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          (update-in [:revolutionary-potential] adj-level + 0.01))))})
 
 (def posters
   {:id :posters
    :desc "Stick up posters"
    :effort 2
    :cost 100
+   :duration 3
    :action
-   (fn [g _]
-     (-> g
-         (update-in [:police-repression] adj-level + 0.01)))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          (->/when (first-day? a)
+            (update-in [:police-repression] adj-level + 0.01))
+
+          ;; Every day
+          (update-in [:political-climate] - 0.01)
+          (update-in [:prospects] + 1))))})
 
 (def stickers
   {:id :stickers
    :desc "Stickers"
    :effort 2
    :cost 200
+   :duration 4
    :action
-   (fn [g _]
-     (-> g
-         (update-in [:police-repression] adj-level + 0.01)))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          (->/when (first-day? a)
+            (update-in [:police-repression] adj-level + 0.01))
+
+          ;; Every day
+          (update-in [:political-climate] - 0.01)
+          (update-in [:prospects] + 1))))})
 
 
 (defn comunity-center-action [g institution]
@@ -121,15 +181,15 @@
    :effort 5
    :cost 1000
    :action
-   (fn [g a]
-     (let [req-activists (a :effort)]
-       (-> g
-           (update-in [:activists] - req-activists)
-           (update-in [:institutions] conj
-                      {:id :comunity-center
-                       :desc "Comunity Center"
-                       :activists req-activists
-                       :action comunity-center-action}))))})
+   (action-helper
+    (fn [g {activists :effort}]
+      (-> g
+          (update-in [:activists] - activists)
+          (update-in [:institutions] conj
+                     {:id :comunity-center
+                      :desc "Comunity Center"
+                      :activists activists
+                      :action comunity-center-action}))))})
 
 
 (def reclaim-party
@@ -137,10 +197,11 @@
    :desc "Reclaim the Streets party"
    :effort 20
    :action
-   (fn [g _]
-     (-> g
-         (update-in [:prospects] + 5)
-         (update-in [:police-repression] adj-level + 0.05)))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          (update-in [:prospects] + 5)
+          (update-in [:police-repression] adj-level + 0.05))))})
 
 
 
@@ -154,22 +215,26 @@
    :desc "Start a Union"
    :effort 10
    :action
-   (fn [g a]
-     (let [req-activists (a :effort)]
-       (-> g
-           (update-in [:activists] - req-activists)
-           (update-in [:institutions] conj
-                      {:id :union
-                       :desc "Union"
-                       :activists req-activists
-                       :action union-action}))))})
+   (action-helper
+    (fn [g {activists :effort}]
+      (-> g
+          (update-in [:activists] - activists)
+          (update-in [:institutions] conj
+                     {:id :union
+                      :desc "Union"
+                      :activists activists
+                      :action union-action}))))})
 
 
 (def revolution
   {:id :revolution
    :desc "Revolution"
    :effort 10
-   :action (fn [g _] g)})
+   :action
+   (action-helper
+    (fn [g a]
+      (-> g
+          (assoc-in [:status] :revolution))))})
 
 
 (def strike)
