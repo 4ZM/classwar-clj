@@ -68,6 +68,20 @@
       (-> g
           (update-in [:fascists :power] adj-level + 0.01))))})
 
+(def fascist-burn-comunity-center
+  {:id fascist-burn-comunity-center
+   :desc "Fascist burn down your comunity center"
+   :action
+   (event-helper
+    (fn [g a]
+      (let [center (first (filter #(= (% :id) :comunity-center) (g :institutions)))]
+        (-> g
+            ;; Remove the center
+            (update-in [:institutions] disj center)
+
+            ;; Let half of the activists return
+            (update-in [:prospects] + (quot (center :activists) 2))))))})
+
 (def capitalist-ad-campaign
   {:id :capitalist-ad-campaig
    :desc "The capitalists run an ad campaign"

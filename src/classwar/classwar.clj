@@ -82,6 +82,7 @@
   "Debuging to get events from user"
   (let [events [cwe/nop
                 cwe/fascist-flyers
+                cwe/fascist-burn-comunity-center
                 cwe/capitalist-ad-campaign
                 cwe/police-notices]]
     [(cwui/event-menu events input)]))
