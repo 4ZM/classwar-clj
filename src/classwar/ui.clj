@@ -31,7 +31,9 @@
                    (- (g :police-repression) (last-g :police-repression))
                    (g :political-climate)
                    (- (g :political-climate) (last-g :political-climate))))
-  (println "  Institutions:" (str/join ", " (map :desc (g :institutions)))))
+  (println "  Institutions:" (str/join ", " (map :desc (g :institutions))))
+  (println "  Messages:")
+  (println " " (str/join "\n  " (g :digest))))
 
 (defn- format-menu-option [i {desc :desc effort :effort}]
   (if (nil? effort)

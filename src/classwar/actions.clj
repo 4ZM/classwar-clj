@@ -90,7 +90,8 @@
           ;; First day
           (->/when (first-day? a)
             (update-in [:activists] - 2)
-            (update-in [:fascists :activity] adj-level - 0.01))
+            (update-in [:fascists :activity] adj-level - 0.01)
+            (update-in [:digest] conj "You start an online campaign and get some recruits"))
 
           ;; All days
           (update-in [:fascists :power] adj-level - 0.01)

@@ -21,15 +21,17 @@
    :organized-workforce     0.00  ;; %
    :money                   1000  ;; $$
 
-   :fascists {:activity     0.05  ;; %
-             :power         0.01} ;; %
+   :fascists
+   {:activity               0.05  ;; %
+    :power                  0.01} ;; %
 
-   :capitalists {:activity  0.10  ;; %
-                 :power     0.50} ;; %
+   :capitalists
+   {:activity               0.10  ;; %
+    :power                  0.50} ;; %
 
    :police-repression       0.00  ;; %
 
-   :political-climate       0.00  ;; % red
+   :political-climate       0.00  ;; % red (0 = deep blue)
 
    :police-noticed         false  ;; Police knows about the movement
 
@@ -37,6 +39,8 @@
 
    :actions                  #{}  ;; Running actions to be executed
    :events                   #{}  ;; Running events to be executed
+
+   :digest                   #{}  ;; Messages for the day
 
    :status :running})
 
@@ -132,6 +136,7 @@
 
 (defn tic [game actions events]
   (-> game
+      (assoc :digest #{})
       (update-in [:actions] into actions)
       (update-in [:events] into events)
 
