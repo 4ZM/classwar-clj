@@ -107,8 +107,8 @@
 (defn recruit-activists [g]
   (-> g
       (->/as (-> max-recruitment new-activists)
-             (update-in [:activists] + new-activists)) ; update will be in clj 1.7
-      (assoc :recruitable 0)))
+             (update-in [:activists] + new-activists))
+      (update-in [:recruitable] quot 2)))
 
 (defn update-opponent-power [g]
   (-> g
