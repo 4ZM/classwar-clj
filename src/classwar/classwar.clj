@@ -78,15 +78,22 @@
         opts (available-options g available-activists (g :money))]
     [(cwui/action-menu opts input)]))
 
+(defn get-events [g input]
+  "Debuging to get events from user"
+  (let [events [cwe/nop
+                cwe/fascist-flyers
+                cwe/capitalist-ad-campaign
+                cwe/police-notices]]
+    [(cwui/event-menu events input)]))
+
 (defn- execute-ops [game op-tag]
   (let [action-fns (map (fn [a] (fn [g] ((a :action) g a)))
-                        (game :actions))]
+                        (game op-tag))]
     ((apply comp action-fns) game)))
 
 (defn execute-actions [game] (execute-ops game :actions))
 (defn institution-updates [game] (execute-ops game :institutions))
 (defn execute-events [game] (execute-ops game :events))
-
 
 (defn max-recruitment [{activists :activists prospects :prospects :as g}]
   (let [space (- (activist-capacity g) activists)]
@@ -125,12 +132,11 @@
 (defn tic [game actions events]
   (-> game
       (update-in [:actions] into actions)
-      (update-in [:events] conj events)
+      (update-in [:events] into events)
 
       execute-actions
       institution-updates
       execute-events
-
       collect-money
       recruit-activists
       update-opponent-power
@@ -146,11 +152,12 @@
     :capitalists-win (println " > Capitalists Win - You lose")))
 
 (defn play [input]
-  (loop [g  (setup-game)]
-    (cwui/show-game-overview g)
-    (let [actions (get-actions g input)
-          events (cwe/current-events g actions)
-          g (tic g actions events)]
-      (if (= (g :status) :running)
-        (recur g)
-        (game-over g)))))
+  (let [initial-game-state (setup-game)]
+       (loop [g  initial-game-state last-g  initial-game-state]
+         (cwui/show-game-overview g last-g)
+         (let [actions (get-actions g input)
+               events (get-events g input) ;; For debuging events
+               new-game (tic g actions events)]
+           (if (= (new-game :status) :running)
+             (recur new-game g)
+             (game-over new-game))))))
