@@ -8,9 +8,12 @@
 
 (defn show-game-overview [g last-g]
   (println (format "Game overview, day %d" (g :day)))
-  (println (format "  Activists: %d [%d] Workforce: %2.2f [%2.2f]  Money: %d [%d]  Revolution: %2.2f"
+  (println (format "  Activists: %d [%d]  Recruitable: %d [%d]"
                    (g :activists)
                    (- (g :activists) (last-g :activists))
+                   (g :recruitable)
+                   (- (g :recruitable) (last-g :recruitable))))
+  (println (format "  Workforce: %2.2f [%2.2f]  Money: %d [%d]  Revolution: %2.2f"
                    (g :organized-workforce)
                    (- (g :organized-workforce) (last-g :organized-workforce))
                    (g :money)
@@ -31,7 +34,10 @@
                    (- (g :police-repression) (last-g :police-repression))
                    (g :political-climate)
                    (- (g :political-climate) (last-g :political-climate))))
+
   (println "  Institutions:" (str/join ", " (map :desc (g :institutions))))
+  (println "  Actions:" (str/join ", " (map :id (g :actions))))
+  (println "  Events:" (str/join ", " (map :id (g :events))))
   (println "  Messages:")
   (println " " (str/join "\n  " (g :digest))))
 

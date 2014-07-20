@@ -97,6 +97,3 @@
           ;; Every day
           (update-in [:political-climate] adj-level - 0.01))))})
 
-
-(defn current-events [g a]
-  (filter #((% :cond) g) all-events))

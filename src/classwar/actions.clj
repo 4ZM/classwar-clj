@@ -57,16 +57,17 @@
 (def demo-template
   {:id :demo
    :action
-   (fn [g a]
-     (-> g
-         (update-in [:recruitable] + 2)
-         (->/when (= (a :type) :antifa)
-           (update-in [:fascists :power] adj-level - 0.01)
-           (update-in [:fascists :activity] adj-level - 0.01))
-         (->/when (= (a :type) :anticap)
-           (update-in [:capitalists :power] adj-level - 0.1)
-           (update-in [:capitalists :activity] adj-level - 0.01)
-           (update-in [:political-climate] adj-level + 0.01))))})
+   (action-helper
+    (fn [g a]
+      (-> g
+          (update-in [:recruitable] + 2)
+          (->/when (= (a :type) :antifa)
+            (update-in [:fascists :power] adj-level - 0.01)
+            (update-in [:fascists :activity] adj-level - 0.01))
+          (->/when (= (a :type) :anticap)
+            (update-in [:capitalists :power] adj-level - 0.1)
+            (update-in [:capitalists :activity] adj-level - 0.01)
+            (update-in [:political-climate] adj-level + 0.01)))))})
 
 (defn create-demo [type activists]
   (merge demo-template
@@ -89,7 +90,6 @@
       (-> g
           ;; First day
           (->/when (first-day? a)
-            (update-in [:activists] - 2)
             (update-in [:fascists :activity] adj-level - 0.01)
             (update-in [:digest] conj "You start an online campaign and get some recruits"))
 
