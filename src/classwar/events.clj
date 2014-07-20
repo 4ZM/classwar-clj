@@ -80,7 +80,7 @@
             (update-in [:institutions] disj center)
 
             ;; Let half of the activists return
-            (update-in [:prospects] + (quot (center :activists) 2))))))})
+            (update-in [:recruitable] + (quot (center :activists) 2))))))})
 
 (def capitalist-ad-campaign
   {:id :capitalist-ad-campaig

@@ -15,7 +15,7 @@
   {:day 0
 
    :activists                  5  ;; Number of
-   :prospects                  0  ;; Possible recruits
+   :recruitable                0  ;; Possible recruits
 
    :revolutionary-potential 0.00  ;; %
    :organized-workforce     0.00  ;; %
@@ -96,15 +96,15 @@
 (defn institution-updates [game] (execute-ops game :institutions))
 (defn execute-events [game] (execute-ops game :events))
 
-(defn max-recruitment [{activists :activists prospects :prospects :as g}]
+(defn max-recruitment [{activists :activists recruitable :recruitable :as g}]
   (let [space (- (activist-capacity g) activists)]
-    (min space prospects)))
+    (min space recruitable)))
 
 (defn recruit-activists [g]
   (-> g
       (->/as (-> max-recruitment new-activists)
              (update-in [:activists] + new-activists)) ; update will be in clj 1.7
-      (assoc :prospects 0)))
+      (assoc :recruitable 0)))
 
 (defn update-opponent-power [g]
   (-> g

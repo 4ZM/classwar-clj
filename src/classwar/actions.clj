@@ -59,7 +59,7 @@
    :action
    (fn [g a]
      (-> g
-         (update-in [:prospects] + 2)
+         (update-in [:recruitable] + 2)
          (->/when (= (a :type) :antifa)
            (update-in [:fascists :power] adj-level - 0.01)
            (update-in [:fascists :activity] adj-level - 0.01))
@@ -95,7 +95,7 @@
           ;; All days
           (update-in [:fascists :power] adj-level - 0.01)
           (update-in [:political-climate] adj-level + 0.01)
-          (update-in [:prospects] + 1))))})
+          (update-in [:recruitable] + 1))))})
 
 (def party
   {:id :party
@@ -106,7 +106,7 @@
    (action-helper
     (fn [g a]
       (-> g
-          (update-in [:prospects] + 1)
+          (update-in [:recruitable] + 1)
           (update-in [:money] + 5000))))})
 
 (defn antifa-group-action [g institution]
@@ -153,7 +153,7 @@
 
           ;; Every day
           (update-in [:political-climate] adj-level + 0.01)
-          (update-in [:prospects] + 1))))})
+          (update-in [:recruitable] + 1))))})
 
 (def stickers
   {:id :stickers
@@ -170,7 +170,7 @@
 
           ;; Every day
           (update-in [:political-climate] adj-level + 0.01)
-          (update-in [:prospects] + 1))))})
+          (update-in [:recruitable] + 1))))})
 
 
 (defn comunity-center-action [g institution]
@@ -201,7 +201,7 @@
    (action-helper
     (fn [g a]
       (-> g
-          (update-in [:prospects] + 5)
+          (update-in [:recruitable] + 5)
           (update-in [:police-repression] adj-level + 0.05))))})
 
 
