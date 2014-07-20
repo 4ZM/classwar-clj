@@ -66,7 +66,7 @@
          (->/when (= (a :type) :anticap)
            (update-in [:capitalists :power] adj-level - 0.1)
            (update-in [:capitalists :activity] adj-level - 0.01)
-           (update-in [:political-climate] - 0.01))))})
+           (update-in [:political-climate] adj-level + 0.01))))})
 
 (defn create-demo [type activists]
   (merge demo-template
@@ -94,7 +94,7 @@
 
           ;; All days
           (update-in [:fascists :power] adj-level - 0.01)
-          (update-in [:political-climate] - 0.01)
+          (update-in [:political-climate] adj-level + 0.01)
           (update-in [:prospects] + 1))))})
 
 (def party
@@ -152,7 +152,7 @@
             (update-in [:police-repression] adj-level + 0.01))
 
           ;; Every day
-          (update-in [:political-climate] - 0.01)
+          (update-in [:political-climate] adj-level + 0.01)
           (update-in [:prospects] + 1))))})
 
 (def stickers
@@ -169,12 +169,12 @@
             (update-in [:police-repression] adj-level + 0.01))
 
           ;; Every day
-          (update-in [:political-climate] - 0.01)
+          (update-in [:political-climate] adj-level + 0.01)
           (update-in [:prospects] + 1))))})
 
 
 (defn comunity-center-action [g institution]
-  (update-in g [:political-climate] - 0.01))
+  (update-in g [:political-climate] adj-level + 0.01))
 
 (def start-comunity-center
   {:id :comunity-center
@@ -208,8 +208,8 @@
 
 (defn union-action [g institution]
   (-> g
-      (update-in [:political-climate] - 0.001)
-      (update-in [:organized-workforce] + 0.005)))
+      (update-in [:political-climate] adj-level + 0.001)
+      (update-in [:organized-workforce] adj-level + 0.005)))
 
 (def start-union
   {:id :start-union

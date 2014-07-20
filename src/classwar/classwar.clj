@@ -29,11 +29,11 @@
 
    :police-repression       0.00  ;; %
 
-   :political-climate       0.00  ;; -1 to 1 (left / right)
-
-   :institutions             #{}  ;; Support groups and structures
+   :political-climate       0.00  ;; % red
 
    :police-noticed         false  ;; Police knows about the movement
+
+   :institutions             #{}  ;; Support groups and structures
 
    :actions                  #{}  ;; Running actions to be executed
    :events                   #{}  ;; Running events to be executed
