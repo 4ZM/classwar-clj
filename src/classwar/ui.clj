@@ -41,9 +41,9 @@
   (println "  Messages:")
   (println " " (str/join "\n  " (g :digest))))
 
-(defn- format-menu-option [i {desc :desc effort :effort}]
+(defn- format-menu-option [i {desc :desc effort :effort prob :probability}]
   (if (nil? effort)
-    (format "  %d. %s" i desc)
+    (format "  %d. %s [%2.2f]" i desc (* 100 prob))
     (format "  %d. %s [%d A]" i desc effort)))
 
 (defn user-input []

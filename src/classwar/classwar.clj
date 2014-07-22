@@ -1,4 +1,4 @@
-(ns classwar
+(ns classwar.classwar
   (:require [classwar.actions :as cwa]
             [classwar.events :as cwe]
             [classwar.ui :as cwui]
@@ -88,7 +88,9 @@
                 cwe/fascist-flyers
                 cwe/fascist-burn-comunity-center
                 cwe/capitalist-ad-campaign
-                cwe/police-notices]]
+                cwe/police-notices]
+        ;; Replace probabilities with acctual values
+        events (map #(assoc % :probability ((% :probability) g)) events)]
     [(cwui/event-menu events input)]))
 
 (defn- execute-ops [game op-tag]

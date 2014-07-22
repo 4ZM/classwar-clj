@@ -26,7 +26,7 @@
   (fn [g a]
     (-> g
 
-        ;; Spend moneyz on the first day 
+        ;; Spend moneyz on the first day
         (cond-> (first-day? a)
                 (update-in [:money] - (cost a)))
 
@@ -42,15 +42,19 @@
 
 (def nop
   {:id :nop
-   :desc "Keep playing"
-   :effort 0
+   :desc "No event"
+   :probability (fn [g] 1.0)
    :action (event-helper (fn [g a] g))})
 
 
 (def police-notices
   {:id :police-notices
    :desc "Police takes notice of your movement"
-   :cond (fn [g] (and (> (g :activists) 9) (not (g :police-noticed))))
+   :probability
+   (fn [g]
+     (if (g :police-noticed)
+       0.0 ;; Police allready knows about movement
+       (min 1.0 (/ (Math/sqrt (g :activists)) 100))))
    :action(event-helper
            (fn [g a]
              (println "EVENT! Police takes notice!")
@@ -60,8 +64,13 @@
 
 
 (def fascist-flyers
-  {:id fascist-flyers
+  {:id :fascist-flyers
    :desc "Fascist handout flyers"
+   :probability
+   (fn [g]
+     (let [pow (-> g :fascists :power)
+           act (-> g :fascists :activity)]
+       (max 0.01 (min pow act))))
    :action
    (event-helper
     (fn [g a]
@@ -69,8 +78,16 @@
           (update-in [:fascists :power] adj-level + 0.01))))})
 
 (def fascist-burn-comunity-center
-  {:id fascist-burn-comunity-center
+  {:id :fascist-burn-comunity-center
    :desc "Fascist burn down your comunity center"
+   :probability
+   (fn [g]
+     (let [pow (-> g :fascists :power)
+           activity (-> g :fascists :activity)]
+       (cond
+        (not (some #{:comunity-center} (map :id (-> g :institutions)))) 0.0
+        (< activity 0.1) 0.0
+        :else (* 0.1 activity))))
    :action
    (event-helper
     (fn [g a]
@@ -86,6 +103,11 @@
   {:id :capitalist-ad-campaig
    :desc "The capitalists run an ad campaign"
    :duration 3
+   :probability
+   (fn [g]
+     (let [pow (-> g :capitalists :power)
+           act (-> g :capitalists :activity)]
+       (max 0.01 (min pow act))))
    :action
    (event-helper
     (fn [g a]

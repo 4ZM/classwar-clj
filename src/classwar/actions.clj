@@ -250,5 +250,6 @@
 (def occupy-abandoned-building)
 (def start-hackerspace)
 (def start-activist-food-truck)
-
+(def create-web-site)
+(def tear-down-propaganda)
 (def general-strike)
