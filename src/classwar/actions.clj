@@ -4,8 +4,6 @@
 (defn- remove-action [g a]
   (update-in g [:actions] disj a))
 
-(defn- extended-action? [a] (contains? a :duration))
-
 (defn cost [a] (get a :cost 0))
 (defn effort [a] (get a :effort 0))
 (defn duration [a] (get a :duration 1))

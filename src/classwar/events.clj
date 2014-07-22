@@ -4,8 +4,6 @@
 (defn- remove-event [g a]
   (update-in g [:events] disj a))
 
-(defn- extended-event? [a] (contains? a :duration))
-
 (defn cost [a] (get a :cost 0))
 (defn effort [a] (get a :effort 0))
 (defn duration [a] (get a :duration 1))
