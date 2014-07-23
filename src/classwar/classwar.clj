@@ -25,7 +25,7 @@
 
    :police-repression       0.00  ;; %
 
-   :political-climate       0.00  ;; % red (0 = deep blue)
+   :political-climate       0.50  ;; % red (0 = deep blue)
 
    :police-noticed         false  ;; Police knows about the movement
 

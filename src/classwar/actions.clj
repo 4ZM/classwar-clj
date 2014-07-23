@@ -65,10 +65,10 @@
       (-> g
           (update-in [:recruitable] + 2)
           (->/when (= (a :type) :antifa)
-            (update-in [:fascists :power] adj-level - 0.01)
+            (update-in [:fascists :power] adj-level - 0.02)
             (update-in [:fascists :activity] adj-level - 0.01))
           (->/when (= (a :type) :anticap)
-            (update-in [:capitalists :power] adj-level - 0.1)
+            (update-in [:capitalists :power] adj-level - 0.02)
             (update-in [:capitalists :activity] adj-level - 0.01)
             (update-in [:political-climate] adj-level + 0.01)))))})
 
@@ -78,9 +78,9 @@
           :effort activists
           :desc (cond
                  (= type :antifa)
-                 "Organize Antifa demonstration"
+                 "Organize antifa demonstration"
                  (= type :anticap)
-                 "Orgnaize anti-capitalist demonstration")}))
+                 "Orgnaize anti capitalist demonstration")}))
 
 (def online-campaign
   {:id :online-campaign
@@ -140,7 +140,7 @@
    (action-helper
     (fn [g a]
       (-> g
-          (update-in [:revolutionary-potential] adj-level + 0.01))))})
+          (update-in [:political-climate] adj-level + 0.01))))})
 
 (def posters
   {:id :posters
