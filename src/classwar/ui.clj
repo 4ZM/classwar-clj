@@ -35,6 +35,8 @@
                    (g :political-climate)
                    (- (g :political-climate) (last-g :political-climate))))
 
+  (println (format "  Activist Capacity: %d [%d]"
+                   (cwa/activist-capacity g) (cwa/activist-capacity last-g)))
   (println "  Institutions:" (str/join ", " (map :desc (g :institutions))))
   (println "  Actions:" (str/join ", " (map :id (g :actions))))
   (println "  Events:" (str/join ", " (map :id (g :events))))

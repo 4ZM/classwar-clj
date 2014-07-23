@@ -1,6 +1,11 @@
 (ns classwar.actions
   (:require [lonocloud.synthread :as ->]))
 
+(defn activist-capacity [g]
+  "Max number of activists that can be organized"
+  (max 10 (reduce + (keep :activist-capacity (g :institutions)))))
+
+
 (defn- remove-action [g a]
   (update-in g [:actions] disj a))
 
@@ -175,6 +180,12 @@
 (defn comunity-center-action [g institution]
   (update-in g [:political-climate] adj-level + 0.01))
 
+(def comunity-center
+  {:id :comunity-center
+   :desc "Comunity Center"
+   :activist-capacity 30
+   :action comunity-center-action})
+
 (def start-comunity-center
   {:id :comunity-center
    :desc "Start a comunity center"
@@ -186,10 +197,8 @@
       (-> g
           (update-in [:activists] - activists)
           (update-in [:institutions] conj
-                     {:id :comunity-center
-                      :desc "Comunity Center"
-                      :activists activists
-                      :action comunity-center-action}))))})
+                     (merge {:activists activists}
+                            comunity-center)))))})
 
 
 (def reclaim-party
@@ -236,6 +245,27 @@
       (-> g
           (assoc-in [:status] :revolution))))})
 
+(defn occupied-building-action [g a]
+  (update-in g [:political-climate] adj-level + 0.01))
+
+(def occupied-building
+  {:id :occupied-building
+   :desc "Occupied Building"
+   :activist-capacity 20
+   :action occupied-building-action})
+
+(def occupy-building
+  {:id :occupy-building
+   :desc "Occupy abandoned building"
+   :effort 5
+   :action
+   (action-helper
+    (fn [g {activists :effort}]
+      (-> g
+          (update-in [:activists] - activists)
+          (update-in [:institutions] conj
+                     (merge {:activists activists}
+                            occupied-building)))))})
 
 (def strike)
 (def occupy-university)
@@ -243,9 +273,8 @@
 (def start-adbusting-group)
 (def start-paper)
 (def start-book-cafe)
-(def start-comunity-center)
 (def build-printshop)
-(def occupy-abandoned-building)
+
 (def start-hackerspace)
 (def start-activist-food-truck)
 (def create-web-site)

@@ -97,6 +97,27 @@
             ;; Let half of the activists return
             (update-in [:recruitable] + (quot (center :activists) 2))))))})
 
+(def police-evicts-occupied-building
+  {:id :police-evicts-occupied-building
+   :desc "Police evicts activists from occupied building"
+   :probability
+   (fn [g]
+     (let [repression (-> g :police-repression)]
+       (cond
+        (not (some #{:occupied-building} (map :id (-> g :institutions)))) 0.0
+        :else (* 0.1 repression))))
+   :action
+   (event-helper
+    (fn [g a]
+      (let [building (first (filter #(= (% :id) :occupied-building) (g :institutions)))]
+        (-> g
+            ;; Remove the building
+            (update-in [:institutions] disj building)
+
+            ;; Let half of the activists return
+            (update-in [:recruitable] + (quot (building :activists) 2))))))})
+
+
 (def capitalist-ad-campaign
   {:id :capitalist-ad-campaig
    :desc "The capitalists run an ad campaign"

@@ -4,12 +4,6 @@
             [classwar.ui :as cwui]
             [lonocloud.synthread :as ->]))
 
-(defn activist-capacity [g]
-  "Max number of activists that can be organized"
-  (cond
-   (some #{:comunity-center} (map :id (g :institutions))) 30
-   :default 10))
-
 (defn setup-game []
   "Create initial game state"
   {:day 0
@@ -70,6 +64,8 @@
                 (conj cwa/start-union))
         (cond-> (not (has-institution? :comunity-center g))
                 (conj cwa/start-comunity-center))
+        (cond-> (not (has-institution? :occupied-building g))
+                (conj cwa/occupy-building))
         (cond-> (not (has-institution? :antifa-group g))
                 (conj cwa/start-antifa-group))
         (cond-> (revolution-available? g)
@@ -87,6 +83,7 @@
   (let [events [cwe/nop
                 cwe/fascist-flyers
                 cwe/fascist-burn-comunity-center
+                cwe/police-evicts-occupied-building
                 cwe/capitalist-ad-campaign
                 cwe/police-notices]
         ;; Replace probabilities with acctual values
@@ -103,7 +100,7 @@
 (defn execute-events [game] (execute-ops game :events))
 
 (defn max-recruitment [{activists :activists recruitable :recruitable :as g}]
-  (let [space (- (activist-capacity g) activists)]
+  (let [space (- (cwa/activist-capacity g) activists)]
     (min space recruitable)))
 
 (defn recruit-activists [g]
