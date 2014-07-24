@@ -15,12 +15,11 @@
                    (- (g :activists) (last-g :activists))
                    (g :recruitable)
                    (- (g :recruitable) (last-g :recruitable))))
-  (println (format "  Workforce: %2.2f [%2.2f]  Money: %d [%d]  Revolution: %2.2f"
+  (println (format "  Workforce: %2.2f [%2.2f]  Money: %d [%d]"
                    (g :organized-workforce)
                    (- (g :organized-workforce) (last-g :organized-workforce))
                    (g :money)
-                   (- (g :money) (last-g :money))
-                   (g :revolutionary-potential)))
+                   (- (g :money) (last-g :money))))
   (println (format "  Fascists>    Power: %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
                    (-> g :fascists :power)
                    (- (-> g :fascists :power) (-> last-g :fascists  :power))

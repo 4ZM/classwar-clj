@@ -8,7 +8,6 @@
    :activists                  5  ;; Number of
    :recruitable                0  ;; Possible recruits
 
-   :revolutionary-potential 0.00  ;; %
    :organized-workforce     0.00  ;; %
    :money                   1000  ;; $$
 
