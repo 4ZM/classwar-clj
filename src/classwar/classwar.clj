@@ -31,9 +31,7 @@
 
    :institutions             #{}  ;; Support groups and structures
 
-   :actions                  #{}  ;; Running actions to be executed
-   :events                   #{}  ;; Running events to be executed
-
+   :operations               #{}  ;; Running operations
    :digest                   #{}  ;; Messages for the day
 
    :status :running})
@@ -47,7 +45,7 @@
        (has-institution? :antifa-group g)))
 
 (defn available-options [g available-activists available-money]
-  (let [actions [cwa/nop
+  (let [actions [cwa/nop-action
                  cwa/surender
                  (cwa/create-demo :antifa 5)
                  (cwa/create-demo :anticap 5)
@@ -80,7 +78,7 @@
 
 (defn get-events [g input]
   "Debuging to get events from user"
-  (let [events [cwe/nop
+  (let [events [cwe/nop-event
                 cwe/fascist-flyers
                 cwe/fascist-burn-comunity-center
                 cwe/police-evicts-occupied-building
@@ -90,14 +88,18 @@
         events (map #(assoc % :probability ((% :probability) g)) events)]
     [(cwui/event-menu events input)]))
 
-(defn- execute-ops [game op-tag]
-  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a)))
-                        (game op-tag))]
+(defn- running-events [game]
+  (filter #(= (% :type) :event) (game :ops)))
+(defn- running-actions [game]
+  (filter #(= (% :type) :action) (game :operations)))
+
+(defn- execute-ops [game ops]
+  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a))) ops)]
     ((apply comp action-fns) game)))
 
-(defn execute-actions [game] (execute-ops game :actions))
-(defn institution-updates [game] (execute-ops game :institutions))
-(defn execute-events [game] (execute-ops game :events))
+(defn execute-actions [game] (execute-ops game (running-actions game)))
+(defn institution-updates [game] (execute-ops game (game :institutions)))
+(defn execute-events [game] (execute-ops game (running-events game)))
 
 (defn max-recruitment [{activists :activists recruitable :recruitable :as g}]
   (let [space (- (cwa/activist-capacity g) activists)]
@@ -117,7 +119,7 @@
 (defn update-game-status [g]
   (-> g
       (cond->
-       (some #{:revolution} (map :id (g :actions)))
+       (some #{:revolution} (map :id (g :operations)))
        (assoc :status :revolution))
       (cond->
        (>= (-> g :fascists :power) 1.0)
@@ -136,8 +138,8 @@
 (defn tic [game actions events]
   (-> game
       (assoc :digest #{})
-      (update-in [:actions] into actions)
-      (update-in [:events] into events)
+      (update-in [:operations] into actions)
+      (update-in [:operations] into events)
 
       execute-actions
       institution-updates

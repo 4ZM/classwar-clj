@@ -1,94 +1,63 @@
 (ns classwar.actions
-  (:require [lonocloud.synthread :as ->]))
+  (:require [classwar.op :as cwo]
+            [lonocloud.synthread :as ->]))
 
-(defn activist-capacity [g]
+(defn activist-capacity [{institutions :institutions}]
   "Max number of activists that can be organized"
-  (max 10 (reduce + (keep :activist-capacity (g :institutions)))))
+  (max 10 (reduce + (keep :activist-capacity institutions))))
 
-
-(defn- remove-action [g a]
-  (update-in g [:actions] disj a))
-
-(defn cost [a] (get a :cost 0))
-(defn effort [a] (get a :effort 0))
-(defn duration [a] (get a :duration 1))
-(defn- running [a] (get a :running 1))
-
-(defn- first-day? [a] (= (running a) 1))
-(defn- last-day? [a] (= (running a) (duration a)))
-
-(defn- update-action [g old-action new-action]
-  (-> g
-      (update-in [:actions] disj old-action)
-      (update-in [:actions] conj new-action)))
-
-(defn- adj-level [level op val]
-  (max (min 1.0 (op level val)) 0.0))
-
-(defn- action-helper [func]
-  (fn [g a]
-    (-> g
-        ;; Spend moneyz on the first day
-        (cond-> (first-day? a)
-                (update-in [:money] - (cost a)))
-
-        ;; Run action
-        (func a)
-
-        (->/if (last-day? a)
-          ;; Remove action on last day
-          (remove-action a)
-
-          ;; Count up running days
-          (update-action a (assoc a :running (inc (running a))))))))
-
-(def nop
+(def nop-action
   {:id :nop
+   :type :action
    :desc "Keep playing"
    :effort 0
-   :action (action-helper (fn [g a] g))})
+   :action (cwo/op-helper (fn [g a] g))})
 
 (def surender
   {:id :surender
+   :type :action
    :desc "Give up"
    :effort 0
-   :action (action-helper
+   :action (cwo/op-helper
             (fn [g a]
               (-> g
                   (assoc-in [:status] :surender))))})
 
-(def demo-template
-  {:id :demo
+(def antifa-demo
+  {:id :antifa-demo
+   :type :action
+   :desc "Organize antifa demonstration"
+   :effort 5
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (update-in [:recruitable] + 2)
-          (->/when (= (a :type) :antifa)
-            (update-in [:fascists :power] adj-level - 0.02)
-            (update-in [:fascists :activity] adj-level - 0.01))
-          (->/when (= (a :type) :anticap)
-            (update-in [:capitalists :power] adj-level - 0.02)
-            (update-in [:capitalists :activity] adj-level - 0.01)
-            (update-in [:political-climate] adj-level + 0.01)))))})
+          (update-in [:fascists :power] adj-level - 0.02)
+          (update-in [:fascists :activity] adj-level - 0.01))))})
 
-(defn create-demo [type activists]
-  (merge demo-template
-         {:type type
-          :effort activists
-          :desc (cond
-                 (= type :antifa)
-                 "Organize antifa demonstration"
-                 (= type :anticap)
-                 "Orgnaize anti capitalist demonstration")}))
+(def anticap-demo
+  {:id :anticap-demo
+   :type :action
+   :desc "Orgnaize anti capitalist demonstration"
+   :effort 5
+   :action
+   (cwo/op-helper
+    (fn [g a]
+      (-> g
+          (update-in [:recruitable] + 2)
+          (update-in [:capitalists :power] adj-level - 0.02)
+          (update-in [:capitalists :activity] adj-level - 0.01)
+          (update-in [:political-climate] adj-level + 0.01))))})
 
 (def online-campaign
   {:id :online-campaign
+   :type :action
    :desc "Start online campaign"
    :effort 2
    :duration 5
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           ;; First day
@@ -103,11 +72,12 @@
 
 (def party
   {:id :party
+   :type :action
    :desc "Support party"
    :effort 5
    :cost 1000
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (update-in [:recruitable] + 1)
@@ -116,40 +86,47 @@
 (defn antifa-group-action [g institution]
   (update-in g [:fascists :activity] adj-level - 0.01))
 
+(def antifa-group
+  {:id :antifa-group
+   :type :institution
+   :desc "Antifa Group"
+   :action antifa-group-action})
+
 (def start-antifa-group
   {:id :antifa-group
+   :type :action
    :desc "Start an antifa group"
    :effort 5
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g {activists :effort}]
       (-> g
           (update-in [:activists] - activists)
           (update-in [:institutions] conj
-                     {:id :antifa-group
-                      :desc "Antifa Group"
-                      :activists activists
-                      :action antifa-group-action}))))})
+                     (merge antifa-group
+                            {:activists activists})))))})
 
 (def handout-flyers
   {:id :handout-flyers
+   :type :action
    :desc "Handout flyers"
    :effort 1
    :cost 50
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (update-in [:political-climate] adj-level + 0.01))))})
 
 (def posters
   {:id :posters
+   :type :action
    :desc "Stick up posters"
    :effort 2
    :cost 100
    :duration 3
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (->/when (first-day? a)
@@ -161,12 +138,13 @@
 
 (def stickers
   {:id :stickers
+   :type :action
    :desc "Stickers"
    :effort 2
    :cost 200
    :duration 4
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (->/when (first-day? a)
@@ -182,17 +160,19 @@
 
 (def comunity-center
   {:id :comunity-center
+   :type :institution
    :desc "Comunity Center"
    :activist-capacity 30
    :action comunity-center-action})
 
 (def start-comunity-center
   {:id :comunity-center
+   :type :action
    :desc "Start a comunity center"
    :effort 5
    :cost 1000
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g {activists :effort}]
       (-> g
           (update-in [:activists] - activists)
@@ -203,10 +183,11 @@
 
 (def reclaim-party
   {:id :reclaim-party
+   :type :action
    :desc "Reclaim the Streets party"
    :effort 20
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (update-in [:recruitable] + 5)
@@ -219,28 +200,34 @@
       (update-in [:political-climate] adj-level + 0.001)
       (update-in [:organized-workforce] adj-level + 0.005)))
 
+(def union
+  {:id :union
+   :type :institution
+   :desc "Union"
+   :action union-action})
+
+
 (def start-union
   {:id :start-union
+   :type :action
    :desc "Start a Union"
    :effort 10
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g {activists :effort}]
       (-> g
           (update-in [:activists] - activists)
           (update-in [:institutions] conj
-                     {:id :union
-                      :desc "Union"
-                      :activists activists
-                      :action union-action}))))})
+                     (merge {:activists activists} union)))))})
 
 
 (def revolution
   {:id :revolution
+   :type :action
    :desc "Revolution"
    :effort 10
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g a]
       (-> g
           (assoc-in [:status] :revolution))))})
@@ -250,16 +237,18 @@
 
 (def occupied-building
   {:id :occupied-building
+   :type :institution
    :desc "Occupied Building"
    :activist-capacity 20
    :action occupied-building-action})
 
 (def occupy-building
   {:id :occupy-building
+   :type :action
    :desc "Occupy abandoned building"
    :effort 5
    :action
-   (action-helper
+   (cwo/op-helper
     (fn [g {activists :effort}]
       (-> g
           (update-in [:activists] - activists)
