@@ -57,7 +57,7 @@
     [(cwui/event-menu events input)]))
 
 (defn- execute-ops [game ops]
-  (let [action-fns (map (fn [a] (fn [g] ((a :action) g a))) ops)]
+  (let [action-fns (map (fn [a] (fn [g] ((a :op) g a))) ops)]
     ((apply comp action-fns) game)))
 
 (defn execute-actions [game] (execute-ops game (cws/running-actions game)))

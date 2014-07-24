@@ -7,7 +7,7 @@
      ~(merge {:id (keyword name)
               :type :action
               :desc desc
-              :action `(cwo/op-helper ~func)}
+              :op `(cwo/op-helper ~func)}
              params)))
 
 (def-action nop-action
