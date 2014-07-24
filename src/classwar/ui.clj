@@ -1,5 +1,6 @@
 (ns classwar.ui
-  (:require [classwar.state :as cws]
+  (:require [classwar.op :as cwo]
+            [classwar.state :as cws]
             [classwar.actions :as cwa]
             [classwar.events :as cwe]
             [clojure.string :as str]
@@ -39,15 +40,18 @@
   (println (format "  Activist Capacity: %d [%d]"
                    (cws/activist-capacity g) (cws/activist-capacity last-g)))
   (println "  Institutions:" (str/join ", " (map :desc (g :institutions))))
-  (println "  Actions:" (str/join ", " (map :id (g :actions))))
-  (println "  Events:" (str/join ", " (map :id (g :events))))
+  (println "  Actions:" (str/join ", " (map :id (cws/running-actions g))))
+  (println "  Events:" (str/join ", " (map :id (cws/running-events g))))
   (println "  Messages:")
   (println " " (str/join "\n  " (g :digest))))
 
-(defn- format-menu-option [i {desc :desc effort :effort prob :probability}]
-  (if (nil? effort)
-    (format "  %d. %s [%2.2f]" i desc (* 100 prob))
-    (format "  %d. %s [%d A]" i desc effort)))
+(defn- format-menu-option [i op]
+  (let [desc (op :desc)
+        effort (cwo/effort op)
+        prob (op :probability)]
+    (if (= (op :type) :event)
+      (format "  %d. %s [%2.2f]" i desc (* 100 prob))
+      (format "  %d. %s [%d A]" i desc effort))))
 
 (defn user-input []
   (let [str-opt (read-line)]
