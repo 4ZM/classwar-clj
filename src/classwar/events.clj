@@ -40,7 +40,7 @@
    (cwo/op-helper
     (fn [g a]
       (-> g
-          (update-in [:fascists :power] adj-level + 0.01))))})
+          (update-in [:fascists :power] cwo/adj-level + 0.01))))})
 
 (def fascist-burn-comunity-center
   {:id :fascist-burn-comunity-center
@@ -101,10 +101,10 @@
    (cwo/op-helper
     (fn [g a]
       (-> g
-          (->/when (first-day? a)
-            (update-in [:capitalists :power] adj-level + 0.01)
-            (update-in [:political-climate] adj-level - 0.01))
+          (->/when (cwo/first-day? a)
+            (update-in [:capitalists :power] cwo/adj-level + 0.01)
+            (update-in [:political-climate] cwo/adj-level - 0.01))
 
           ;; Every day
-          (update-in [:political-climate] adj-level - 0.01))))})
+          (update-in [:political-climate] cwo/adj-level - 0.01))))})
 

@@ -2,10 +2,6 @@
   (:require [classwar.op :as cwo]
             [lonocloud.synthread :as ->]))
 
-(defn activist-capacity [{institutions :institutions}]
-  "Max number of activists that can be organized"
-  (max 10 (reduce + (keep :activist-capacity institutions))))
-
 (def nop-action
   {:id :nop
    :type :action
@@ -33,8 +29,8 @@
     (fn [g a]
       (-> g
           (update-in [:recruitable] + 2)
-          (update-in [:fascists :power] adj-level - 0.02)
-          (update-in [:fascists :activity] adj-level - 0.01))))})
+          (update-in [:fascists :power] cwo/adj-level - 0.02)
+          (update-in [:fascists :activity] cwo/adj-level - 0.01))))})
 
 (def anticap-demo
   {:id :anticap-demo
@@ -46,9 +42,9 @@
     (fn [g a]
       (-> g
           (update-in [:recruitable] + 2)
-          (update-in [:capitalists :power] adj-level - 0.02)
-          (update-in [:capitalists :activity] adj-level - 0.01)
-          (update-in [:political-climate] adj-level + 0.01))))})
+          (update-in [:capitalists :power] cwo/adj-level - 0.02)
+          (update-in [:capitalists :activity] cwo/adj-level - 0.01)
+          (update-in [:political-climate] cwo/adj-level + 0.01))))})
 
 (def online-campaign
   {:id :online-campaign
@@ -61,13 +57,13 @@
     (fn [g a]
       (-> g
           ;; First day
-          (->/when (first-day? a)
-            (update-in [:fascists :activity] adj-level - 0.01)
+          (->/when (cwo/first-day? a)
+            (update-in [:fascists :activity] cwo/adj-level - 0.01)
             (update-in [:digest] conj "You start an online campaign and get some recruits"))
 
           ;; All days
-          (update-in [:fascists :power] adj-level - 0.01)
-          (update-in [:political-climate] adj-level + 0.01)
+          (update-in [:fascists :power] cwo/adj-level - 0.01)
+          (update-in [:political-climate] cwo/adj-level + 0.01)
           (update-in [:recruitable] + 1))))})
 
 (def party
@@ -84,7 +80,7 @@
           (update-in [:money] + 5000))))})
 
 (defn antifa-group-action [g institution]
-  (update-in g [:fascists :activity] adj-level - 0.01))
+  (update-in g [:fascists :activity] cwo/adj-level - 0.01))
 
 (def antifa-group
   {:id :antifa-group
@@ -116,7 +112,7 @@
    (cwo/op-helper
     (fn [g a]
       (-> g
-          (update-in [:political-climate] adj-level + 0.01))))})
+          (update-in [:political-climate] cwo/adj-level + 0.01))))})
 
 (def posters
   {:id :posters
@@ -129,11 +125,11 @@
    (cwo/op-helper
     (fn [g a]
       (-> g
-          (->/when (first-day? a)
-            (update-in [:police-repression] adj-level + 0.01))
+          (->/when (cwo/first-day? a)
+            (update-in [:police-repression] cwo/adj-level + 0.01))
 
           ;; Every day
-          (update-in [:political-climate] adj-level + 0.01)
+          (update-in [:political-climate] cwo/adj-level + 0.01)
           (update-in [:recruitable] + 1))))})
 
 (def stickers
@@ -147,16 +143,16 @@
    (cwo/op-helper
     (fn [g a]
       (-> g
-          (->/when (first-day? a)
-            (update-in [:police-repression] adj-level + 0.01))
+          (->/when (cwo/first-day? a)
+            (update-in [:police-repression] cwo/adj-level + 0.01))
 
           ;; Every day
-          (update-in [:political-climate] adj-level + 0.01)
+          (update-in [:political-climate] cwo/adj-level + 0.01)
           (update-in [:recruitable] + 1))))})
 
 
 (defn comunity-center-action [g institution]
-  (update-in g [:political-climate] adj-level + 0.01))
+  (update-in g [:political-climate] cwo/adj-level + 0.01))
 
 (def comunity-center
   {:id :comunity-center
@@ -191,14 +187,14 @@
     (fn [g a]
       (-> g
           (update-in [:recruitable] + 5)
-          (update-in [:police-repression] adj-level + 0.05))))})
+          (update-in [:police-repression] cwo/adj-level + 0.05))))})
 
 
 
 (defn union-action [g institution]
   (-> g
-      (update-in [:political-climate] adj-level + 0.001)
-      (update-in [:organized-workforce] adj-level + 0.005)))
+      (update-in [:political-climate] cwo/adj-level + 0.001)
+      (update-in [:organized-workforce] cwo/adj-level + 0.005)))
 
 (def union
   {:id :union
@@ -233,7 +229,7 @@
           (assoc-in [:status] :revolution))))})
 
 (defn occupied-building-action [g a]
-  (update-in g [:political-climate] adj-level + 0.01))
+  (update-in g [:political-climate] cwo/adj-level + 0.01))
 
 (def occupied-building
   {:id :occupied-building

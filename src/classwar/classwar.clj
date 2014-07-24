@@ -1,70 +1,38 @@
 (ns classwar.classwar
-  (:require [classwar.actions :as cwa]
+  (:require [classwar.op :as cwo]
+            [classwar.state :as cws]
+            [classwar.actions :as cwa]
             [classwar.events :as cwe]
             [classwar.ui :as cwui]
             [lonocloud.synthread :as ->]))
 
-(defn setup-game []
-  "Create initial game state"
-  {:day 0
-
-   :activists                  5  ;; Number of
-   :recruitable                0  ;; Possible recruits
-
-   :revolutionary-potential 0.00  ;; %
-   :organized-workforce     0.00  ;; %
-   :money                   1000  ;; $$
-
-   :fascists
-   {:activity               0.05  ;; %
-    :power                  0.01} ;; %
-
-   :capitalists
-   {:activity               0.10  ;; %
-    :power                  0.50} ;; %
-
-   :police-repression       0.00  ;; %
-
-   :political-climate       0.50  ;; % red (0 = deep blue)
-
-   :police-noticed         false  ;; Police knows about the movement
-
-   :institutions             #{}  ;; Support groups and structures
-
-   :operations               #{}  ;; Running operations
-   :digest                   #{}  ;; Messages for the day
-
-   :status :running})
-
-(defn has-institution? [id {institutions :institutions}]
-  (some #{id} (map :id institutions)))
 
 (defn revolution-available? [g]
-  (and (has-institution? :union g)
-       (has-institution? :comunity-center g)
-       (has-institution? :antifa-group g)))
+  (and (cws/has-institution? :union g)
+       (cws/has-institution? :comunity-center g)
+       (cws/has-institution? :antifa-group g)))
 
 (defn available-options [g available-activists available-money]
   (let [actions [cwa/nop-action
                  cwa/surender
-                 (cwa/create-demo :antifa 5)
-                 (cwa/create-demo :anticap 5)
+                 cwa/antifa-demo
+                 cwa/anticap-demo
                  cwa/handout-flyers
                  cwa/posters
                  cwa/stickers
                  cwa/online-campaign
                  cwa/party
                  cwa/reclaim-party]
-        activist-filter (partial filter #(< (cwa/effort %) available-activists))
-        cost-filter (partial filter #(< (cwa/cost %) available-money))]
+        activist-filter (partial filter #(< (cwo/effort %) available-activists))
+        cost-filter (partial filter #(< (cwo/cost %) available-money))]
     (-> actions
-        (cond-> (not (has-institution? :union g))
+        (cond-> (not (cws/has-institution? :union g))
                 (conj cwa/start-union))
-        (cond-> (not (has-institution? :comunity-center g))
+        (cond-> (not (cws/has-institution? :comunity-center g))
                 (conj cwa/start-comunity-center))
-        (cond-> (not (has-institution? :occupied-building g))
+        (cond-> (not (cws/has-institution? :occupied-building g))
                 (conj cwa/occupy-building))
-        (cond-> (not (has-institution? :antifa-group g))
+        (cond-> (not (cws/has-institution? :antifa-group g))
                 (conj cwa/start-antifa-group))
         (cond-> (revolution-available? g)
                 (conj cwa/revolution))
@@ -88,27 +56,22 @@
         events (map #(assoc % :probability ((% :probability) g)) events)]
     [(cwui/event-menu events input)]))
 
-(defn- running-events [game]
-  (filter #(= (% :type) :event) (game :ops)))
-(defn- running-actions [game]
-  (filter #(= (% :type) :action) (game :operations)))
-
 (defn- execute-ops [game ops]
   (let [action-fns (map (fn [a] (fn [g] ((a :action) g a))) ops)]
     ((apply comp action-fns) game)))
 
-(defn execute-actions [game] (execute-ops game (running-actions game)))
+(defn execute-actions [game] (execute-ops game (cws/running-actions game)))
 (defn institution-updates [game] (execute-ops game (game :institutions)))
-(defn execute-events [game] (execute-ops game (running-events game)))
-
-(defn max-recruitment [{activists :activists recruitable :recruitable :as g}]
-  (let [space (- (cwa/activist-capacity g) activists)]
-    (min space recruitable)))
+(defn execute-events [game] (execute-ops game (cws/running-events game)))
 
 (defn recruit-activists [g]
   (-> g
-      (->/as (-> max-recruitment new-activists)
-             (update-in [:activists] + new-activists))
+      ;; Recruit as many as possible
+      (->/as
+       (-> cws/max-recruitment new-activists)
+       (update-in [:activists] + new-activists))
+
+      ;; Remove recruitable by half if they aren't recruited
       (update-in [:recruitable] quot 2)))
 
 (defn update-opponent-power [g]
@@ -129,11 +92,7 @@
        (assoc :status :capitalists-win))))
 
 (defn collect-money [g]
-  (let [free-activists (g :activists)
-        bound-activists (keep :activists (g :insitutions))
-        all-activists (reduce + free-activists bound-activists)
-        collected-money (* all-activists 5)]
-    (update-in g [:money] + collected-money)))
+  (update-in g [:money] + (cws/daily-donations g)))
 
 (defn tic [game actions events]
   (-> game
@@ -159,12 +118,11 @@
     :capitalists-win (println " > Capitalists Win - You lose")))
 
 (defn play [input]
-  (let [initial-game-state (setup-game)]
-       (loop [g  initial-game-state last-g  initial-game-state]
-         (cwui/show-game-overview g last-g)
-         (let [actions (get-actions g input)
-               events (get-events g input) ;; For debuging events
-               new-game (tic g actions events)]
-           (if (= (new-game :status) :running)
-             (recur new-game g)
-             (game-over new-game))))))
+  (loop [g  cws/initial-game-state last-g  cws/initial-game-state]
+    (cwui/show-game-overview g last-g)
+    (let [actions (get-actions g input)
+          events (get-events g input) ;; For debuging events
+          new-game (tic g actions events)]
+      (if (= (new-game :status) :running)
+        (recur new-game g)
+        (game-over new-game)))))

@@ -1,5 +1,6 @@
 (ns classwar.ui
-  (:require [classwar.actions :as cwa]
+  (:require [classwar.state :as cws]
+            [classwar.actions :as cwa]
             [classwar.events :as cwe]
             [clojure.string :as str]
             [lonocloud.synthread :as ->]))
@@ -36,7 +37,7 @@
                    (- (g :political-climate) (last-g :political-climate))))
 
   (println (format "  Activist Capacity: %d [%d]"
-                   (cwa/activist-capacity g) (cwa/activist-capacity last-g)))
+                   (cws/activist-capacity g) (cws/activist-capacity last-g)))
   (println "  Institutions:" (str/join ", " (map :desc (g :institutions))))
   (println "  Actions:" (str/join ", " (map :id (g :actions))))
   (println "  Events:" (str/join ", " (map :id (g :events))))
