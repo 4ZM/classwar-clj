@@ -1,5 +1,6 @@
 (ns classwar.actions
   (:require [classwar.op :as cwo]
+            [classwar.state :as cws]
             [lonocloud.synthread :as ->]))
 
 (defmacro def-action [name desc params func]
@@ -27,22 +28,25 @@
   {:effort 5}
   (fn [g a]
     (-> g
-        (update-in [:recruitable] + 2)
+        (update-in [:recruitable] + 3)
+
         (update-in [:fascists :power] cwo/adj-level - 0.02)
-        (update-in [:fascists :activity] cwo/adj-level - 0.01))))
+        (->/if (cws/has-institution? :antifa-group)
+          (update-in [:fascists :activity] cwo/adj-level - 0.02)
+          (update-in [:fascists :activity] cwo/adj-level - 0.01)))))
 
 (def-action anticap-demo
   "Orgnaize anti capitalist demonstration"
   {:effort 5}
   (fn [g a]
     (-> g
-        (update-in [:recruitable] + 2)
+        (update-in [:recruitable] + 3)
         (update-in [:capitalists :power] cwo/adj-level - 0.02)
         (update-in [:capitalists :activity] cwo/adj-level - 0.01)
-        (update-in [:political-climate] cwo/adj-level + 0.01))))
+        (update-in [:political-climate] cwo/adj-level + 0.02))))
 
-(def-action online-campaign
-  "Start online campaign"
+(def-action online-antifa-campaign
+  "Start online antifa campaign"
   {:effort 2
    :duration 5}
   (fn [g a]
@@ -50,7 +54,8 @@
         ;; First day
         (->/when (cwo/first-day? a)
           (update-in [:fascists :activity] cwo/adj-level - 0.01)
-          (update-in [:digest] conj "You start an online campaign and get some recruits"))
+          (update-in [:digest] conj
+                     "You start an online antifa campaign and get some recruits"))
 
         ;; All days
         (update-in [:fascists :power] cwo/adj-level - 0.01)
@@ -91,6 +96,7 @@
    :cost 50}
   (fn [g a]
     (-> g
+        (update-in [:capitalists :power] cwo/adj-level - 0.01)
         (update-in [:political-climate] cwo/adj-level + 0.01))))
 
 (def-action posters
@@ -201,6 +207,16 @@
                    (merge {:activists activists}
                           occupied-building)))))
 
+(def-action tear-down-fascist-propaganda
+  "Tear down fascist propaganda"
+  {:effort 3}
+  (fn [g a]
+    (let [posters (filter #(= (% :id) :fascist-posters) (cws/running-events g))]
+      (-> g
+          (update-in [:operations] (partial apply disj) posters)))))
+
+
+
 (def strike)
 (def occupy-university)
 (def start-anticap-group)
@@ -212,5 +228,5 @@
 (def start-hackerspace)
 (def start-activist-food-truck)
 (def create-web-site)
-(def tear-down-propaganda)
+
 (def general-strike)

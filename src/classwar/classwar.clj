@@ -20,9 +20,10 @@
                  cwa/handout-flyers
                  cwa/posters
                  cwa/stickers
-                 cwa/online-campaign
+                 cwa/online-antifa-campaign
                  cwa/party
-                 cwa/reclaim-party]
+                 cwa/reclaim-party
+                 cwa/tear-down-fascist-propaganda]
         activist-filter (partial filter #(< (cwo/effort %) available-activists))
         cost-filter (partial filter #(< (cwo/cost %) available-money))]
     (-> actions
@@ -49,6 +50,7 @@
   (let [events [cwe/nop-event
                 cwe/fascist-flyers
                 cwe/fascist-burn-comunity-center
+                cwe/fascist-posters
                 cwe/police-evicts-occupied-building
                 cwe/capitalist-ad-campaign
                 cwe/police-notices]

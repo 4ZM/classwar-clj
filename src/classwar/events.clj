@@ -41,6 +41,17 @@
     (-> g
         (update-in [:fascists :power] cwo/adj-level + 0.01))))
 
+(def-event fascist-posters
+  "Fascist stick up posters"
+  {:duration 3}
+  (fn [{{power :power activity :activity} :fascists}]
+    (max 0.01 (min power activity)))
+  (fn [g a]
+    (-> g
+        (->/when (cwo/first-day? a)
+          (update-in [:digest] conj "Fascists stick up posters"))
+        (update-in [:fascists :power] cwo/adj-level + 0.02))))
+
 (def-event fascist-burn-comunity-center
   "Fascist burn down your comunity center"
   {}
