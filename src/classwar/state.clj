@@ -6,7 +6,7 @@
   {:day 0
 
    :activists                  5  ;; Number of
-   :recruitable                0  ;; Possible recruits
+   :recruitable             0.00  ;; Possible recruits
 
    :organized-workforce     0.00  ;; %
    :money                   1000  ;; $$
@@ -45,9 +45,12 @@
 (defn running-actions [game]
   (filter #(= (% :type) :action) (game :operations)))
 
-(defn max-recruitment [{activists :activists recruitable :recruitable :as g}]
+(defn recruitable-activists [{r :recruitable}]
+  (int (Math/floor r)))
+
+(defn max-recruitment [{activists :activists :as g}]
   (let [space (- (activist-capacity g) activists)]
-    (min space recruitable)))
+    (min space (recruitable-activists g))))
 
 (def ACTIVIST_DAILY_DONATION 5)
 

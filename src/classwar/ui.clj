@@ -10,7 +10,7 @@
 
 (defn show-game-overview [g last-g]
   (println (format "Game overview, day %d" (g :day)))
-  (println (format "  Activists: %d [%d]  Recruitable: %d [%d]"
+  (println (format "  Activists: %d [%d]  Recruitable: %2.2f [%2.2f]"
                    (g :activists)
                    (- (g :activists) (last-g :activists))
                    (g :recruitable)

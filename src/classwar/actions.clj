@@ -28,7 +28,7 @@
   {:effort 5}
   (fn [g a]
     (-> g
-        (update-in [:recruitable] + 3)
+        (update-in [:recruitable] + 3.0)
 
         (update-in [:fascists :power] cwo/adj-level - 0.02)
         (->/if (cws/has-institution? :antifa-group)
@@ -40,7 +40,7 @@
   {:effort 5}
   (fn [g a]
     (-> g
-        (update-in [:recruitable] + 3)
+        (update-in [:recruitable] + 3.0)
         (update-in [:capitalists :power] cwo/adj-level - 0.02)
         (update-in [:capitalists :activity] cwo/adj-level - 0.01)
         (update-in [:political-climate] cwo/adj-level + 0.02))))
@@ -60,7 +60,7 @@
         ;; All days
         (update-in [:fascists :power] cwo/adj-level - 0.01)
         (update-in [:political-climate] cwo/adj-level + 0.01)
-        (update-in [:recruitable] + 1))))
+        (update-in [:recruitable] + 1.0))))
 
 (def-action party
   "Support party"
@@ -68,7 +68,7 @@
    :cost 1000}
   (fn [g a]
     (-> g
-        (update-in [:recruitable] + 1)
+        (update-in [:recruitable] + 1.0)
         (update-in [:money] + 5000))))
 
 (defn antifa-group-action [g institution]
@@ -111,7 +111,7 @@
 
         ;; Every day
         (update-in [:political-climate] cwo/adj-level + 0.01)
-        (update-in [:recruitable] + 1))))
+        (update-in [:recruitable] + 0.5))))
 
 (def-action stickers
   "Stickers"
@@ -125,7 +125,7 @@
 
         ;; Every day
         (update-in [:political-climate] cwo/adj-level + 0.01)
-        (update-in [:recruitable] + 1))))
+        (update-in [:recruitable] + 0.3))))
 
 
 (defn comunity-center-action [g institution]
@@ -136,7 +136,7 @@
    :type :institution
    :desc "Comunity Center"
    :activist-capacity 30
-   :action comunity-center-action})
+   :op comunity-center-action})
 
 (def-action start-comunity-center
   "Start a comunity center"
@@ -155,7 +155,7 @@
   {:effort 20}
   (fn [g a]
     (-> g
-        (update-in [:recruitable] + 5)
+        (update-in [:recruitable] + 5.0)
         (update-in [:police-repression] cwo/adj-level + 0.05))))
 
 (defn union-action [g institution]
@@ -167,7 +167,7 @@
   {:id :union
    :type :institution
    :desc "Union"
-   :action union-action})
+   :op union-action})
 
 
 (def-action start-union
@@ -195,7 +195,7 @@
    :type :institution
    :desc "Occupied Building"
    :activist-capacity 20
-   :action occupied-building-action})
+   :op occupied-building-action})
 
 (def-action occupy-building
   "Occupy abandoned building"

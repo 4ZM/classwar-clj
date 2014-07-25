@@ -69,7 +69,7 @@
           (update-in [:institutions] disj center)
 
           ;; Let half of the activists return
-          (update-in [:recruitable] + (quot (center :activists) 2))))))
+          (update-in [:recruitable] + (* 0.5 (center :activists)))))))
 
 (def-event police-evicts-occupied-building
   "Police evicts activists from occupied building"
@@ -85,8 +85,8 @@
           ;; Remove the building
           (update-in [:institutions] disj building)
 
-          ;; Let half of the activists return
-          (update-in [:recruitable] + (quot (building :activists) 2))))))
+          ;; Let most of the activists return
+          (update-in [:recruitable] + (* 0.8 (building :activists)))))))
 
 
 (def-event capitalist-ad-campaign

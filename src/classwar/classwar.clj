@@ -73,8 +73,8 @@
        (-> cws/max-recruitment new-activists)
        (update-in [:activists] + new-activists))
 
-      ;; Remove recruitable by half if they aren't recruited
-      (update-in [:recruitable] quot 2)))
+      ;; Remove some recruitable if they aren't recruited
+      (update-in [:recruitable] * 0.8)))
 
 (defn update-opponent-power [g]
   (-> g
