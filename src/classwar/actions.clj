@@ -211,13 +211,14 @@
   "Tear down fascist propaganda"
   {:effort 3}
   (fn [g a]
-    (let [posters (filter #(= (% :id) :fascist-posters) (cws/running-events g))]
+    (let [posters (filter (comp #{:fascist-posters} :id) (cws/running-events g))]
       (-> g
           (update-in [:operations] (partial apply disj) posters)))))
 
 
 
 (def strike)
+
 (def occupy-university)
 (def start-anticap-group)
 (def start-adbusting-group)

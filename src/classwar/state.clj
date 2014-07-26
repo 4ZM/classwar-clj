@@ -41,9 +41,9 @@
   (max 10 (reduce + (keep :activist-capacity institutions))))
 
 (defn running-events [game]
-  (filter #(= (% :type) :event) (game :operations)))
+  (filter (comp #{:event} :type) (game :operations)))
 (defn running-actions [game]
-  (filter #(= (% :type) :action) (game :operations)))
+  (filter (comp #{:action} :type) (game :operations)))
 
 (defn recruitable-activists [{r :recruitable}]
   (int (Math/floor r)))
