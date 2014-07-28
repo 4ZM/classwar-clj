@@ -75,7 +75,8 @@
                 cwe/capitalist-ad-campaign
                 cwe/police-notices
                 cwe/create-free-trade-agreement
-                cwe/create-capitalist-think-tank]
+                cwe/create-capitalist-think-tank
+                cwe/police-harass-recruitables]
         ;; DEBUG Replace probabilities with acctual values
         events-dbg (map #(assoc % :probability ((% :probability) g)) events)
         ]

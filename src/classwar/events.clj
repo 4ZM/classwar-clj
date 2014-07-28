@@ -116,6 +116,16 @@
         ;; Every day
         (update-in [:political-climate] cwo/adj-level - 0.01))))
 
+(def-event police-harass-recruitables
+  "The police harass potential recruitables"
+  {}
+  (fn [g]
+    (* 0.1 (g :police-repression)))
+  (fn [g a]
+    (-> g
+        (update-in [:recruitable] * 0.5))))
+
+
 (defn free-trade-action [g a]
   (update-in g [:capitalists :power] cwo/adj-level + 0.001))
 
