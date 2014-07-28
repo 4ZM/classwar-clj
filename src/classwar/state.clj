@@ -12,7 +12,8 @@
    :money                   1000  ;; $$
 
    :fascists
-   {:activity               0.05  ;; %
+   {:morale                 0.10
+    :conflict               0.00
     :power                  0.01} ;; %
 
    :capitalists
@@ -59,3 +60,14 @@
         bound-activists (keep :activists (g :insitutions))
         all-activists (reduce + free-activists bound-activists)]
     (* all-activists ACTIVIST_DAILY_DONATION)))
+
+(def FASCIST_CYCLIC_PERIOD 100)
+(defn fascist-activity [g]
+  (let [cyclic (+ 0.5 (Math/sin (/ (* (g :day) 2 Math/PI) FASCIST_CYCLIC_PERIOD)))
+        climate (Math/pow (- 1.0 (g :political-climate)) 2.0)
+        conflict (get-in g [:fascists :conflict])
+        morale (get-in g [:fascists :morale])]
+    (+ (* 0.2 cyclic)
+       (* 0.3 climate)
+       (* 0.2 conflict)
+       (* 0.3 morale))))

@@ -20,12 +20,17 @@
                    (- (g :organized-workforce) (last-g :organized-workforce))
                    (g :money)
                    (- (g :money) (last-g :money))))
-  (println (format "  Fascists>    Power: %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
+  (println (format "  Fascists>      Power:    %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
                    (-> g :fascists :power)
                    (- (-> g :fascists :power) (-> last-g :fascists  :power))
-                   (-> g :fascists :activity)
-                   (- (-> g :fascists :activity) (-> last-g :fascists  :activity))))
-  (println (format "  Capitalists> Power: %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
+                   (cws/fascist-activity g)
+                   (- (cws/fascist-activity g) (cws/fascist-activity last-g))))
+  (println (format "  DBG Fascists>  Conflict: %2.2f [%2.2f]  Morale:   %2.2f [%2.2f]"
+                   (-> g :fascists :conflict)
+                   (- (-> g :fascists :conflict) (-> last-g :fascists  :conflict))
+                   (-> g :fascists :morale)
+                   (- (-> g :fascists :morale) (-> last-g :fascists  :morale)))) 
+  (println (format "  Capitalists>   Power: %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
                    (-> g :capitalists :power)
                    (- (-> g :capitalists :power) (-> last-g :capitalists :power))
                    (-> g :capitalists :activity)

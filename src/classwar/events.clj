@@ -1,5 +1,6 @@
 (ns classwar.events
   (:require [classwar.op :as cwo]
+            [classwar.state :as cws]
             [lonocloud.synthread :as ->]))
 
 (defmacro def-event [name desc params prob-fn op-fn]
@@ -34,9 +35,7 @@
   "Fascist handout flyers"
   {}
   (fn [g]
-    (let [pow (-> g :fascists :power)
-          act (-> g :fascists :activity)]
-      (max 0.01 (min pow act))))
+    (min 0.5 (cws/fascist-activity g)))
   (fn [g a]
     (-> g
         (update-in [:fascists :power] cwo/adj-level + 0.01))))
@@ -44,8 +43,8 @@
 (def-event fascist-posters
   "Fascist stick up posters"
   {:duration 3}
-  (fn [{{power :power activity :activity} :fascists}]
-    (max 0.01 (min power activity)))
+  (fn [g]
+    (min 0.3 (cws/fascist-activity g)))
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)
@@ -56,8 +55,7 @@
   "Fascist burn down your comunity center"
   {}
   (fn [g]
-    (let [pow (-> g :fascists :power)
-          activity (-> g :fascists :activity)]
+    (let [activity (cws/fascist-activity g)]
       (cond
        (not (some #{:comunity-center} (map :id (-> g :institutions)))) 0.0
        (< activity 0.1) 0.0
@@ -93,9 +91,7 @@
   "The capitalists run an ad campaign"
   {:duration 3}
   (fn [g]
-    (let [pow (-> g :capitalists :power)
-          act (-> g :capitalists :activity)]
-      (max 0.01 (min pow act))))
+    (min 0.2 (cws/fascist-activity g)))
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)

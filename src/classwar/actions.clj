@@ -29,11 +29,9 @@
   (fn [g a]
     (-> g
         (update-in [:recruitable] + 3.0)
-
         (update-in [:fascists :power] cwo/adj-level - 0.02)
-        (->/if (cws/has-institution? :antifa-group)
-          (update-in [:fascists :activity] cwo/adj-level - 0.02)
-          (update-in [:fascists :activity] cwo/adj-level - 0.01)))))
+        (update-in [:fascists :conflict] cwo/adj-level + 0.01)
+        (update-in [:fascists :morale] cwo/adj-level - 0.01))))
 
 (def-action anticap-demo
   "Orgnaize anti capitalist demonstration"
@@ -53,7 +51,7 @@
     (-> g
         ;; First day
         (->/when (cwo/first-day? a)
-          (update-in [:fascists :activity] cwo/adj-level - 0.01)
+          (update-in [:fascists :conflict] cwo/adj-level + 0.01)
           (update-in [:digest] conj
                      "You start an online antifa campaign and get some recruits"))
 
@@ -72,7 +70,7 @@
         (update-in [:money] + 5000))))
 
 (defn antifa-group-action [g institution]
-  (update-in g [:fascists :activity] cwo/adj-level - 0.01))
+  (update-in g [:fascists :morale] cwo/adj-level - 0.005))
 
 (def antifa-group
   {:id :antifa-group
@@ -213,6 +211,8 @@
   (fn [g a]
     (let [posters (filter (comp #{:fascist-posters} :id) (cws/running-events g))]
       (-> g
+          (update-in [:fascists :conflict] cwo/adj-level + 0.01)
+          (update-in [:fascists :morale] cwo/adj-level - 0.01)
           (update-in [:operations] (partial apply disj) posters)))))
 
 
