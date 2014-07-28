@@ -45,6 +45,9 @@
         opts (available-options g available-activists (g :money))]
     [(cwui/action-menu opts input)]))
 
+(defn rand-include-event? [g {pfn :probability}]
+  (< (rand) (pfn g)))
+
 (defn get-events [g input]
   "Debuging to get events from user"
   (let [events [cwe/nop-event
@@ -54,9 +57,11 @@
                 cwe/police-evicts-occupied-building
                 cwe/capitalist-ad-campaign
                 cwe/police-notices]
-        ;; Replace probabilities with acctual values
-        events (map #(assoc % :probability ((% :probability) g)) events)]
-    [(cwui/event-menu events input)]))
+        ;; DEBUG Replace probabilities with acctual values
+        ;;events (map #(assoc % :probability ((% :probability) g)) events)
+        ]
+    ;; DEBUG [(cwui/event-menu events input)]))
+    (filter (partial rand-include-event? g) events)))
 
 (defn- execute-ops [game ops]
   (let [action-fns (map (fn [a] (fn [g] ((a :op) g a))) ops)]
