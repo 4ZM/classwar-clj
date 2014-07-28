@@ -74,7 +74,8 @@
                 cwe/police-evicts-occupied-building
                 cwe/capitalist-ad-campaign
                 cwe/police-notices
-                cwe/create-free-trade-agreement]
+                cwe/create-free-trade-agreement
+                cwe/create-capitalist-think-tank]
         ;; DEBUG Replace probabilities with acctual values
         events-dbg (map #(assoc % :probability ((% :probability) g)) events)
         ]

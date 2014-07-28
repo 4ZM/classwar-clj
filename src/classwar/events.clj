@@ -134,3 +134,23 @@
     (-> g
         (update-in [:institutions] conj
                    free-trade-agreement))))
+
+
+(defn capitalist-think-tank-action [g a]
+  (update-in g [:capitalists :power] cwo/adj-level + 0.001))
+
+(def capitalist-think-tank
+  {:id :capitalist-think-tank
+   :type :institution
+   :desc "Capitalist think tank"
+   :op capitalist-think-tank-action})
+
+(def-event create-capitalist-think-tank
+  "Capitalist think tank"
+  {}
+  (fn [g]
+    (* 0.1 (cws/capitalist-activity g)))
+  (fn [g a]
+    (-> g
+        (update-in [:institutions] conj
+                   capitalist-think-tank))))
