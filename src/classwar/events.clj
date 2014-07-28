@@ -116,3 +116,21 @@
         ;; Every day
         (update-in [:political-climate] cwo/adj-level - 0.01))))
 
+(defn free-trade-action [g a]
+  (update-in g [:capitalists :power] cwo/adj-level + 0.001))
+
+(def free-trade-agreement
+  {:id :free-trade-agreement
+   :type :institution
+   :desc "Free trade agreement"
+   :op free-trade-action})
+
+(def-event create-free-trade-agreement
+  "Free trade agreement"
+  {}
+  (fn [g]
+    (* 0.1 (cws/capitalist-activity g)))
+  (fn [g a]
+    (-> g
+        (update-in [:institutions] conj
+                   free-trade-agreement))))
