@@ -1,4 +1,5 @@
 (ns classwar.classwar
+  (:gen-class)
   (:require [classwar.op :as cwo]
             [classwar.state :as cws]
             [classwar.actions :as cwa]
@@ -134,3 +135,7 @@
       (if (= (new-game :status) :running)
         (recur new-game g)
         (game-over new-game)))))
+
+(defn -main
+  [& args]
+  (play cwui/user-input))
