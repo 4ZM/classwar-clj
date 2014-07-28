@@ -48,8 +48,8 @@
   (println (format "  Capitalists>   Power: %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
                    (-> g :capitalists :power)
                    (- (-> g :capitalists :power) (-> last-g :capitalists :power))
-                   (-> g :capitalists :activity)
-                   (- (-> g :capitalists :activity) (-> last-g :capitalists :activity))))
+                   (cws/capitalist-activity g)
+                   (- (cws/capitalist-activity g) (cws/capitalist-activity last-g))))
   (println (format "  Police Repression: %2.2f [%2.2f]  Political Climate: %2.2f [%2.2f]"
                    (g :police-repression)
                    (- (g :police-repression) (last-g :police-repression))

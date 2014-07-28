@@ -32,8 +32,7 @@
     :power                  0.01} ;; %
 
    :capitalists
-   {:activity               0.10  ;; %
-    :power                  0.50} ;; %
+   {:power                  0.50} ;; %
 
    :police-repression       0.00  ;; %
 
@@ -84,8 +83,7 @@
     (/ (+ harmonic 1.0) 2.0)))
 
 (defn- fa-climate-component [{pc :political-climate}]
-  (let [
-        CUTOFF 0.7
+  (let [CUTOFF 0.7
         pow-pc (Math/pow (/ (- CUTOFF pc) CUTOFF) 2.0)]
     (if (< pc CUTOFF) pow-pc 0.0)))
 
@@ -98,3 +96,14 @@
        (* 0.3 climate)
        (* 0.2 conflict)
        (* 0.3 morale))))
+
+(defn- cap-climate-component [{pc :political-climate}]
+  (let [CUTOFF 0.3
+        pow-pc (Math/pow (/ (- CUTOFF pc) (- 1.0 CUTOFF)) 2.0)]
+    (if (> pc CUTOFF) pow-pc 0.0))
+  )
+(defn capitalist-activity [g]
+  (let [climate (cap-climate-component g)
+        power (- 1.0 (get-in g [:capitalists :power]))]
+    (+ (* 0.5 climate)
+       (* 0.5 power))))

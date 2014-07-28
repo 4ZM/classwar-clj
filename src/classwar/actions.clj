@@ -55,7 +55,6 @@
     (-> g
         (update-in [:recruitable] + 3.0)
         (update-in [:capitalists :power] cwo/adj-level - 0.02)
-        (update-in [:capitalists :activity] cwo/adj-level - 0.01)
         (update-in [:political-climate] cwo/adj-level + 0.02))))
 
 (def-action online-antifa-campaign

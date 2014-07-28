@@ -101,7 +101,7 @@
   (-> g
       (update-in [:fascists :power] cwo/adj-level + (* 0.05 (cws/fascist-activity g)))
       (update-in [:fascists :conflict] cwo/adj-level - 0.005)
-      (update-in [:capitalists :power] + (* 0.1 (-> g :capitalists :activity)))))
+      (update-in [:capitalists :power] + (* 0.05 (cws/capitalist-activity g)))))
 
 (defn update-game-status [g]
   (-> g
