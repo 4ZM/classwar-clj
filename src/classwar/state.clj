@@ -77,9 +77,21 @@
     (* all-activists ACTIVIST_DAILY_DONATION)))
 
 (def FASCIST_CYCLIC_PERIOD 100)
+(defn- fa-cyclic-component [{day :day}]
+  (let [PI (Math/PI)
+        phase (- (/ PI 2.0))
+        harmonic (Math/sin (+ (/ (* 2 PI day) FASCIST_CYCLIC_PERIOD) phase))]
+    (/ (+ harmonic 1.0) 2.0)))
+
+(defn- fa-climate-component [{pc :political-climate}]
+  (let [
+        CUTOFF 0.7
+        pow-pc (Math/pow (/ (- CUTOFF pc) CUTOFF) 2.0)]
+    (if (< pc CUTOFF) pow-pc 0.0)))
+
 (defn fascist-activity [g]
-  (let [cyclic (+ 0.5 (Math/sin (/ (* (g :day) 2 Math/PI) FASCIST_CYCLIC_PERIOD)))
-        climate (Math/pow (- 1.0 (g :political-climate)) 2.0)
+  (let [cyclic (fa-cyclic-component g)
+        climate (fa-climate-component g)
         conflict (get-in g [:fascists :conflict])
         morale (get-in g [:fascists :morale])]
     (+ (* 0.2 cyclic)

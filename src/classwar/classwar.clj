@@ -74,9 +74,9 @@
                 cwe/capitalist-ad-campaign
                 cwe/police-notices]
         ;; DEBUG Replace probabilities with acctual values
-        ;;events (map #(assoc % :probability ((% :probability) g)) events)
+        events-dbg (map #(assoc % :probability ((% :probability) g)) events)
         ]
-    ;; DEBUG [(cwui/event-menu events input)]))
+    ;; [(cwui/event-menu events-dbg input)] ;; DEBUG
     (filter (partial rand-include-event? g) events)))
 
 (defn- execute-ops [game ops]
