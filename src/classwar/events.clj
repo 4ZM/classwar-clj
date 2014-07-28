@@ -106,7 +106,7 @@
   "The capitalists run an ad campaign"
   {:duration 3}
   (fn [g]
-    (min 0.2 (cws/capitalist-activity g)))
+    (min 0.1 (cws/capitalist-activity g)))
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)

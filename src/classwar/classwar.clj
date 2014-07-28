@@ -38,11 +38,12 @@
                  cwa/stickers
                  cwa/online-antifa-campaign
                  cwa/party
-                 cwa/reclaim-party
-                 cwa/tear-down-fascist-propaganda]
+                 cwa/reclaim-party]
         activist-filter (partial filter #(< (cwo/effort %) available-activists))
         cost-filter (partial filter #(< (cwo/cost %) available-money))]
     (-> actions
+        (cond-> (some (comp #{:fascist-posters} :id) (cws/running-events g))
+                (conj cwa/tear-down-fascist-propaganda))
         (cond-> (not (cws/has-institution? :union g))
                 (conj cwa/start-union))
         (cond-> (not (cws/has-institution? :comunity-center g))
