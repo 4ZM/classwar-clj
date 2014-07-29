@@ -64,7 +64,21 @@
     (-> g
         (->/when (cwo/first-day? a)
           (update-in [:digest] conj "Fascists stick up posters"))
-        (update-in [:fascists :power] cwo/adj-level + 0.02))))
+        (update-in [:fascists :power] cwo/adj-level + 0.01))))
+
+(def-event fascist-demo
+  "Fascist demonstration"
+  {:duration 3}
+  (fn [g]
+    (* 0.2 (cws/fascist-activity g)))
+  (fn [g a]
+    (-> g
+        (->/when (cwo/first-day? a)
+          (update-in [:digest] conj
+                     "You get a heads up; the fascists will hold a demo in two days"))
+        (->/when (cwo/last-day? a)
+          (update-in [:digest] conj "The fascists hold a demo")
+          (update-in [:fascists :power] cwo/adj-level + 0.05)))))
 
 (def-event fascist-burn-comunity-center
   "Fascist burn down your comunity center"

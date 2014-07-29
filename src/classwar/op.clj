@@ -27,8 +27,8 @@
   (max (min 1.0 (op level val)) 0.0))
 
 
-(defn first-day? [a] (= (running a) 1))
-(defn last-day? [a] (= (running a) (duration a)))
+(defn first-day? [a] (if (nil? a) false (= (running a) 1)))
+(defn last-day? [a] (if (nil? a) false (= (running a) (duration a))))
 
 (defn remove-op [g a] (update-in g [:operations] disj a))
 (defn- update-op [g old-event new-event]

@@ -44,6 +44,8 @@
     (-> actions
         (cond-> (some (comp #{:fascist-posters} :id) (cws/running-events g))
                 (conj cwa/tear-down-fascist-propaganda))
+        (cond-> (cwo/last-day? (first (filter (comp #{:fascist-demo} :id) (cws/running-events g))))
+                (conj cwa/counter-fascist-demo))
         (cond-> (not (cws/has-institution? :union g))
                 (conj cwa/start-union))
         (cond-> (not (cws/has-institution? :comunity-center g))
@@ -76,12 +78,14 @@
                 cwe/police-notices
                 cwe/create-free-trade-agreement
                 cwe/create-capitalist-think-tank
-                cwe/police-harass-recruitables]
+                cwe/police-harass-recruitables
+                cwe/fascist-demo]
         ;; DEBUG Replace probabilities with acctual values
         events-dbg (map #(assoc % :probability ((% :probability) g)) events)
         ]
-    ;; [(cwui/event-menu events-dbg input)] ;; DEBUG
-    (filter (partial rand-include-event? g) events)))
+    [(cwui/event-menu events-dbg input)] ;; DEBUG
+    ;; (filter (partial rand-include-event? g) events)
+    ))
 
 (defn- execute-ops [game ops]
   (let [action-fns (map (fn [a] (fn [g] ((a :op) g a))) ops)]

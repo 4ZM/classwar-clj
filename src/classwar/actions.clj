@@ -227,7 +227,20 @@
       (-> g
           (update-in [:fascists :conflict] cwo/adj-level + 0.01)
           (update-in [:fascists :morale] cwo/adj-level - 0.01)
-          (update-in [:operations] (partial apply disj) posters)))))
+          (cwo/remove-op posters)))))
+
+(def-action counter-fascist-demo
+  "Counter protest fascist demo"
+  {:effort 5}
+  (fn [g a]
+    (let [fa-demo (first (filter (comp #{:fascist-demo} :id) (cws/running-events g)))]
+      (-> g
+          (update-in [:digest] conj
+                     "Your counter demo send the fascists running away")
+          (update-in [:fascists :conflict] cwo/adj-level + 0.1)
+          (update-in [:fascists :morale] cwo/adj-level - 0.05)
+          (update-in [:fascists :power] cwo/adj-level - 0.01)
+          (cwo/remove-op fa-demo)))))
 
 
 
