@@ -90,7 +90,7 @@
   {:id :antifa-group
    :type :institution
    :desc "Antifa Group"
-   :action antifa-group-action})
+   :op antifa-group-action})
 
 (def-action start-antifa-group
   "Start an antifa group"
@@ -228,6 +228,16 @@
           (update-in [:fascists :conflict] cwo/adj-level + 0.01)
           (update-in [:fascists :morale] cwo/adj-level - 0.01)
           (cwo/remove-op posters)))))
+
+(def-action adbusting
+  "Adbusting capitalist propaganda"
+  {:effort 3}
+  (fn [g a]
+    (let [ads (filter (comp #{:capitalist-ad-campaign} :id) (cws/running-events g))]
+      (-> g
+          (update-in [:police-repression] cwo/adj-level + 0.01)
+          (update-in [:political-climate] cwo/adj-level + 0.01)
+          (cwo/remove-op ads)))))
 
 (def-action counter-fascist-demo
   "Counter protest fascist demo"
