@@ -47,7 +47,7 @@
                 (conj cwa/tear-down-fascist-propaganda))
         (cond-> (some (comp #{:capitalist-ad-campaign} :id) (cws/running-events g))
                 (conj cwa/adbusting))
-        (cond-> (cwo/last-day? (first (filter (comp #{:fascist-demo} :id) (cws/running-events g))))
+        (cond-> (cwo/last-day? (cws/running-op g :fascist-demo))
                 (conj cwa/counter-fascist-demo))
         (cond-> (not (cws/has-institution? :union g))
                 (conj cwa/start-union))
