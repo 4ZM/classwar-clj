@@ -33,7 +33,8 @@
                  cwa/surender
                  cwa/antifa-demo
                  cwa/anticap-demo
-                 cwa/handout-flyers
+                 cwa/anticap-flyers
+                 cwa/antifa-flyers
                  cwa/posters
                  cwa/stickers
                  cwa/online-antifa-campaign

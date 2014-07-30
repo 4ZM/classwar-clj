@@ -102,14 +102,22 @@
                    (merge antifa-group
                           {:activists activists})))))
 
-(def-action handout-flyers
-  "Handout flyers"
+(def-action anticap-flyers
+  "Handout anti capitalist flyers"
   {:effort 1
    :cost 50}
   (fn [g a]
     (-> g
         (update-in [:capitalists :power] cwo/adj-level - 0.005)
         (update-in [:political-climate] cwo/adj-level + 0.001))))
+
+(def-action antifa-flyers
+  "Handout anti fascist flyers"
+  {:effort 1
+   :cost 50}
+  (fn [g a]
+    (-> g
+        (update-in [:fascists :power] cwo/adj-level - 0.004))))
 
 (def-action posters
   "Stick up posters"

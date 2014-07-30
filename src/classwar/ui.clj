@@ -26,7 +26,7 @@
         n-marks (Math/round (* marks-len v))
         meter (str/join "" (repeat n-marks "#"))
         spc (str/join "" (repeat (- marks-len n-marks) "-"))]
-    (format "[%1.2f] [%s%s] [%+1.2f]" v meter spc (- v old-v))))
+    (format "[%1.3f] [%s%s] [%+1.3f]" v meter spc (- v old-v))))
 
 (defn show-game-overview [g last-g]
   (println (format "\nDay %d  -  Game Overview" (g :day)))
