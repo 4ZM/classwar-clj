@@ -221,9 +221,9 @@
 
 (def-action tear-down-fascist-propaganda
   "Tear down fascist propaganda"
-  {:effort 3}
+  {:effort 5}
   (fn [g a]
-    (let [posters (filter (comp #{:fascist-posters} :id) (cws/running-events g))]
+    (let [posters (cws/running-op g :fascist-posters)]
       (-> g
           (update-in [:fascists :conflict] cwo/adj-level + 0.01)
           (update-in [:fascists :morale] cwo/adj-level - 0.01)
@@ -233,7 +233,7 @@
   "Adbusting capitalist propaganda"
   {:effort 3}
   (fn [g a]
-    (let [ads (filter (comp #{:capitalist-ad-campaign} :id) (cws/running-events g))]
+    (let [ads (cws/running-op g :capitalist-ad-campaign)]
       (-> g
           (update-in [:police-repression] cwo/adj-level + 0.01)
           (update-in [:political-climate] cwo/adj-level + 0.01)
@@ -243,7 +243,7 @@
   "Counter protest fascist demo"
   {:effort 5}
   (fn [g a]
-    (let [fa-demo (first (filter (comp #{:fascist-demo} :id) (cws/running-events g)))]
+    (let [fa-demo (cws/running-op g :fascist-demo)]
       (-> g
           (update-in [:digest] conj
                      "Your counter demo send the fascists running away")

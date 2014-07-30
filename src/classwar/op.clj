@@ -14,7 +14,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (ns classwar.op
-  (:require [lonocloud.synthread :as ->]))
+  (:require [lonocloud.synthread :as ->]
+            [classwar.state :as cws]))
 
 
 (defn cost [a] (get a :cost 0))

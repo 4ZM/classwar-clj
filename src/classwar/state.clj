@@ -51,6 +51,12 @@
 (defn has-institution? [id {institutions :institutions}]
   (some #{id} (map :id institutions)))
 
+(defn running-op? [{ops :operations} id]
+  (some #{id} (map :id ops)))
+
+(defn running-op [{ops :operations} id]
+  (first (filter (comp #{id} :id) ops)))
+
 (defn activist-capacity [{institutions :institutions}]
   "Max number of activists that can be organized"
   (max 10 (reduce + (keep :activist-capacity institutions))))

@@ -57,9 +57,10 @@
 
 (def-event fascist-posters
   "Fascist stick up posters"
-  {:duration 3}
+  {:duration 10}
   (fn [g]
-    (min 0.3 (cws/fascist-activity g)))
+    (cond (cws/running-op? g :fascist-posters) 0.0
+          :else (* 0.1 (cws/fascist-activity g))))
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)

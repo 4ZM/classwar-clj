@@ -85,8 +85,8 @@
         ;; DEBUG Replace probabilities with acctual values
         events-dbg (map #(assoc % :probability ((% :probability) g)) events)
         ]
-    ;;[(cwui/event-menu events-dbg input)] ;; DEBUG
-    (filter (partial rand-include-event? g) events)
+    [(cwui/event-menu events-dbg input)] ;; DEBUG
+    ;;(filter (partial rand-include-event? g) events)
     ))
 
 (defn- execute-ops [game ops]
@@ -109,9 +109,9 @@
 
 (defn update-opponent-power [g]
   (-> g
-      (update-in [:fascists :power] cwo/adj-level + (* 0.05 (cws/fascist-activity g)))
+      (update-in [:fascists :power] cwo/adj-level + (* 0.02 (cws/fascist-activity g)))
       (update-in [:fascists :conflict] cwo/adj-level - 0.005)
-      (update-in [:capitalists :power] + (* 0.05 (cws/capitalist-activity g)))))
+      (update-in [:capitalists :power] + (* 0.02 (cws/capitalist-activity g)))))
 
 (defn update-game-status [g]
   (-> g
