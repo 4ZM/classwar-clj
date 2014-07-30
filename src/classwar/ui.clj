@@ -71,7 +71,7 @@
   (println "  Actions:" (str/join ", " (map :id (cws/running-actions g))))
   (println "  Events:" (str/join ", " (map :id (cws/running-events g))))
   (println "  Messages:")
-  (println " " (str/join "\n  " (g :digest))))
+  (println (str/join "" (map #(format "   * %s\n" %) (g :digest)))))
 
 (defn- format-menu-option [i op]
   (let [desc (op :desc)
