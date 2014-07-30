@@ -27,12 +27,12 @@
    :money                   1000  ;; $$
 
    :fascists
-   {:morale                 0.10
+   {:morale                 0.2
     :conflict               0.00
-    :power                  0.01} ;; %
+    :power                  0.05} ;; %
 
    :capitalists
-   {:power                  0.50} ;; %
+   {:power                  0.90} ;; %
 
    :police-repression       0.00  ;; %
 

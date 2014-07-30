@@ -60,7 +60,7 @@
   {:duration 10}
   (fn [g]
     (cond (cws/running-op? g :fascist-posters) 0.0
-          :else (* 0.1 (cws/fascist-activity g))))
+          :else (* 0.2 (cws/fascist-activity g))))
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)
@@ -119,9 +119,10 @@
 
 (def-event capitalist-ad-campaign
   "The capitalists run an ad campaign"
-  {:duration 3}
+  {:duration 5}
   (fn [g]
-    (min 0.1 (cws/capitalist-activity g)))
+    (cond (cws/running-op? g :capitalist-ad-campaign) 0.0
+          :else (* 0.4 (cws/capitalist-activity g))))
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)
@@ -142,7 +143,7 @@
 
 
 (defn free-trade-action [g a]
-  (update-in g [:capitalists :power] cwo/adj-level + 0.001))
+  (update-in g [:capitalists :power] cwo/adj-level + 0.002))
 
 (def free-trade-agreement
   {:id :free-trade-agreement
@@ -160,8 +161,8 @@
         (update-in [:institutions] conj
                    free-trade-agreement))))
 
-
 (defn capitalist-think-tank-action [g a]
+  (update-in g [:political-climate] cwo/adj-level - 0.005)
   (update-in g [:capitalists :power] cwo/adj-level + 0.001))
 
 (def capitalist-think-tank

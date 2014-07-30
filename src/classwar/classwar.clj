@@ -85,8 +85,8 @@
         ;; DEBUG Replace probabilities with acctual values
         events-dbg (map #(assoc % :probability ((% :probability) g)) events)
         ]
-    [(cwui/event-menu events-dbg input)] ;; DEBUG
-    ;;(filter (partial rand-include-event? g) events)
+    ;;[(cwui/event-menu events-dbg input)] ;; DEBUG
+    (filter (partial rand-include-event? g) events)
     ))
 
 (defn- execute-ops [game ops]

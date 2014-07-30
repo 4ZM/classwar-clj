@@ -55,12 +55,13 @@
     (-> g
         (update-in [:recruitable] + 3.0)
         (update-in [:capitalists :power] cwo/adj-level - 0.02)
-        (update-in [:political-climate] cwo/adj-level + 0.02))))
+        (update-in [:political-climate] cwo/adj-level + 0.01))))
 
 (def-action online-antifa-campaign
   "Start online antifa campaign"
   {:effort 2
-   :duration 5}
+   :duration 5
+   :cost 500}
   (fn [g a]
     (-> g
         ;; First day
@@ -70,8 +71,7 @@
                      "You start an online antifa campaign and get some recruits"))
 
         ;; All days
-        (update-in [:fascists :power] cwo/adj-level - 0.01)
-        (update-in [:political-climate] cwo/adj-level + 0.01)
+        (update-in [:fascists :power] cwo/adj-level - 0.005)
         (update-in [:recruitable] + 1.0))))
 
 (def-action party
@@ -108,40 +108,40 @@
    :cost 50}
   (fn [g a]
     (-> g
-        (update-in [:capitalists :power] cwo/adj-level - 0.01)
-        (update-in [:political-climate] cwo/adj-level + 0.01))))
+        (update-in [:capitalists :power] cwo/adj-level - 0.005)
+        (update-in [:political-climate] cwo/adj-level + 0.001))))
 
 (def-action posters
   "Stick up posters"
-  {:effort 2
+  {:effort 4
    :cost 100
-   :duration 3}
+   :duration 7}
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)
-          (update-in [:police-repression] cwo/adj-level + 0.01))
+          (update-in [:police-repression] cwo/adj-level + 0.02))
 
         ;; Every day
-        (update-in [:political-climate] cwo/adj-level + 0.01)
+        (update-in [:political-climate] cwo/adj-level + 0.001)
         (update-in [:recruitable] + 0.5))))
 
 (def-action stickers
   "Stickers"
-  {:effort 2
+  {:effort 4
    :cost 200
-   :duration 4}
+   :duration 14}
   (fn [g a]
     (-> g
         (->/when (cwo/first-day? a)
-          (update-in [:police-repression] cwo/adj-level + 0.01))
+          (update-in [:police-repression] cwo/adj-level + 0.02))
 
         ;; Every day
-        (update-in [:political-climate] cwo/adj-level + 0.01)
+        (update-in [:political-climate] cwo/adj-level + 0.001)
         (update-in [:recruitable] + 0.3))))
 
 
 (defn comunity-center-action [g institution]
-  (update-in g [:political-climate] cwo/adj-level + 0.01))
+  (update-in g [:political-climate] cwo/adj-level + 0.005))
 
 (def comunity-center
   {:id :comunity-center
@@ -168,7 +168,8 @@
   (fn [g a]
     (-> g
         (update-in [:recruitable] + 5.0)
-        (update-in [:police-repression] cwo/adj-level + 0.05))))
+        (update-in [:political-climate] cwo/adj-level + 0.005)
+        (update-in [:police-repression] cwo/adj-level + 0.10))))
 
 (defn union-action [g institution]
   (-> g
@@ -200,7 +201,7 @@
         (assoc-in [:status] :revolution))))
 
 (defn occupied-building-action [g a]
-  (update-in g [:political-climate] cwo/adj-level + 0.01))
+  (update-in g [:political-climate] cwo/adj-level + 0.001))
 
 (def occupied-building
   {:id :occupied-building
@@ -225,7 +226,7 @@
   (fn [g a]
     (let [posters (cws/running-op g :fascist-posters)]
       (-> g
-          (update-in [:fascists :conflict] cwo/adj-level + 0.01)
+          (update-in [:fascists :conflict] cwo/adj-level + 0.02)
           (update-in [:fascists :morale] cwo/adj-level - 0.01)
           (cwo/remove-op posters)))))
 
@@ -235,8 +236,8 @@
   (fn [g a]
     (let [ads (cws/running-op g :capitalist-ad-campaign)]
       (-> g
-          (update-in [:police-repression] cwo/adj-level + 0.01)
-          (update-in [:political-climate] cwo/adj-level + 0.01)
+          (update-in [:police-repression] cwo/adj-level + 0.02)
+          (update-in [:political-climate] cwo/adj-level + 0.003)
           (cwo/remove-op ads)))))
 
 (def-action counter-fascist-demo
@@ -247,7 +248,8 @@
       (-> g
           (update-in [:digest] conj
                      "Your counter demo send the fascists running away")
-          (update-in [:fascists :conflict] cwo/adj-level + 0.1)
+          (update-in [:police-repression] cwo/adj-level + 0.01)
+          (update-in [:fascists :conflict] cwo/adj-level + 0.10)
           (update-in [:fascists :morale] cwo/adj-level - 0.05)
           (update-in [:fascists :power] cwo/adj-level - 0.01)
           (cwo/remove-op fa-demo)))))
