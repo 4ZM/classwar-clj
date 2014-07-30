@@ -21,43 +21,52 @@
             [clojure.string :as str]
             [lonocloud.synthread :as ->]))
 
-
+(defn format-level [v old-v]
+  (let [marks-len 20
+        n-marks (Math/round (* marks-len v))
+        meter (str/join "" (repeat n-marks "#"))
+        spc (str/join "" (repeat (- marks-len n-marks) "-"))]
+    (format "[%1.2f] [%s%s] [%+1.2f]" v meter spc (- v old-v))))
 
 (defn show-game-overview [g last-g]
-  (println (format "Game overview, day %d" (g :day)))
-  (println (format "  Activists: %d [%d]  Recruitable: %2.2f [%2.2f]"
+  (println (format "\nDay %d  -  Game Overview" (g :day)))
+  (println (format "  Activists: %d [%d]  Money: $%d [%d]"
                    (g :activists)
                    (- (g :activists) (last-g :activists))
-                   (g :recruitable)
-                   (- (g :recruitable) (last-g :recruitable))))
-  (println (format "  Workforce: %2.2f [%2.2f]  Money: %d [%d]"
-                   (g :organized-workforce)
-                   (- (g :organized-workforce) (last-g :organized-workforce))
                    (g :money)
                    (- (g :money) (last-g :money))))
-  (println (format "  Fascists>      Power:    %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
-                   (-> g :fascists :power)
-                   (- (-> g :fascists :power) (-> last-g :fascists  :power))
-                   (cws/fascist-activity g)
-                   (- (cws/fascist-activity g) (cws/fascist-activity last-g))))
-  (println (format "  DBG Fascists>  Conflict: %2.2f [%2.2f]  Morale:   %2.2f [%2.2f]"
-                   (-> g :fascists :conflict)
-                   (- (-> g :fascists :conflict) (-> last-g :fascists  :conflict))
-                   (-> g :fascists :morale)
-                   (- (-> g :fascists :morale) (-> last-g :fascists  :morale)))) 
-  (println (format "  Capitalists>   Power: %2.2f [%2.2f]  Activity: %2.2f [%2.2f]"
-                   (-> g :capitalists :power)
-                   (- (-> g :capitalists :power) (-> last-g :capitalists :power))
-                   (cws/capitalist-activity g)
-                   (- (cws/capitalist-activity g) (cws/capitalist-activity last-g))))
-  (println (format "  Police Repression: %2.2f [%2.2f]  Political Climate: %2.2f [%2.2f]"
-                   (g :police-repression)
-                   (- (g :police-repression) (last-g :police-repression))
-                   (g :political-climate)
-                   (- (g :political-climate) (last-g :political-climate))))
-
-  (println (format "  Activist Capacity: %d [%d]"
+  (println (format "  Recruitable: %2.2f [%2.2f]  Capacity: %d [%d]"
+                   (g :recruitable)
+                   (- (g :recruitable) (last-g :recruitable))
                    (cws/activist-capacity g) (cws/activist-capacity last-g)))
+  (println (format "  Org. Workforce       %s"
+                   (format-level (g :organized-workforce)
+                                 (last-g :organized-workforce))))
+  (println (format "  Fascist Power        %s"
+                   (format-level (-> g :fascists :power)
+                                 (-> last-g :fascists :power))))
+  (println (format "  Fascist Activity     %s"
+                   (format-level (cws/fascist-activity g)
+                                 (cws/fascist-activity last-g))))
+  (println (format "  Fascist Conflict     %s"
+                   (format-level (-> g :fascists :conflict)
+                                 (-> last-g :fascists :conflict))))
+  (println (format "  Fascist Morale       %s"
+                   (format-level (-> g :fascists :morale)
+                                 (-> last-g :fascists :morale))))
+  (println (format "  Capitalist Power     %s"
+                   (format-level (-> g :capitalists :power)
+                                 (-> last-g :capitalists :power))))
+  (println (format "  Capitalist Activity  %s"
+                   (format-level (cws/capitalist-activity g)
+                                 (cws/capitalist-activity last-g))))
+  (println (format "  Police Repression    %s"
+                   (format-level (g :police-repression)
+                                 (last-g :police-repression))))
+  (println (format "  Political Climate    %s"
+                   (format-level (g :political-climate)
+                                 (last-g :political-climate))))
+
   (println "  Institutions:" (str/join ", " (map :desc (g :institutions))))
   (println "  Actions:" (str/join ", " (map :id (cws/running-actions g))))
   (println "  Events:" (str/join ", " (map :id (cws/running-events g))))
