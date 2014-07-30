@@ -53,6 +53,7 @@
     (min 0.5 (cws/fascist-activity g)))
   (fn [g a]
     (-> g
+        (update-in [:digest] conj "Fascists hand out flyers")
         (update-in [:fascists :power] cwo/adj-level + 0.01))))
 
 (def-event fascist-posters
@@ -93,6 +94,8 @@
   (fn [g a]
     (let [center (first (filter #(= (% :id) :comunity-center) (g :institutions)))]
       (-> g
+          (update-in [:digest] conj "The fascists burn down your comunity center")
+
           ;; Remove the center
           (update-in [:institutions] disj center)
 
@@ -110,6 +113,9 @@
   (fn [g a]
     (let [building (first (filter #(= (% :id) :occupied-building) (g :institutions)))]
       (-> g
+          (update-in [:digest] conj
+                     "The police evicts all activists from the occupied building")
+
           ;; Remove the building
           (update-in [:institutions] disj building)
 
@@ -129,8 +135,12 @@
           (update-in [:capitalists :power] cwo/adj-level + 0.01)
           (update-in [:political-climate] cwo/adj-level - 0.01))
 
+        (->/if (cwo/first-day? a)
+          (update-in [:digest] conj "The capitalists start an ad-campaign")
+          (update-in [:digest] conj "The capitalists ad-campaign keep running"))
+
         ;; Every day
-        (update-in [:political-climate] cwo/adj-level - 0.01))))
+        (update-in [:political-climate] cwo/adj-level - 0.002))))
 
 (def-event police-harass-recruitables
   "The police harass potential recruitables"
@@ -139,6 +149,7 @@
     (* 0.1 (g :police-repression)))
   (fn [g a]
     (-> g
+        (update-in [:digest] conj "The police harass potential recruitables")
         (update-in [:recruitable] * 0.5))))
 
 
@@ -158,6 +169,7 @@
     (* 0.1 (cws/capitalist-activity g)))
   (fn [g a]
     (-> g
+        (update-in [:digest] conj "The capitalists launch a free trade agreement")
         (update-in [:institutions] conj
                    free-trade-agreement))))
 
@@ -178,5 +190,6 @@
     (* 0.1 (cws/capitalist-activity g)))
   (fn [g a]
     (-> g
+        (update-in [:digest] conj "The capitalists launch a think tank")
         (update-in [:institutions] conj
                    capitalist-think-tank))))
